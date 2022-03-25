@@ -43,7 +43,7 @@ function hevent:setunprefix(up)
 end
 
 
-function hevent:start()
+function hevent:Start()
   self:E({"Starting Handle_Events"})  
   if self._handlemarkers ~= false then
     self:HandleEvent(EVENTS.MarkRemoved)
@@ -53,7 +53,7 @@ function hevent:start()
   end
 end
 
-function hevent:stop()
+function hevent:Stop()
   self:E({"Stopping Handle_Events"})  
   self:UnhandleEvent(EVENTS.MarkRemoved)
   self:UnhandleEvent(EVENTS.LandingQualityMark)
@@ -128,7 +128,7 @@ function hevent:OnEventMarkRemoved(EventData)
           local _name = "ctld Deployed FOB #" .. _unitId
           local _fob = nil
           self:E({"ctld",text})
-          local keywords=UTILS.split(text,"|")
+          local keywords=UTILS.Split(text,"|")
           local s = keywords[2]
           if (s == "blue") then
             _fob = ctld.spawnFOB(2, 211, vec3, _name)
@@ -374,7 +374,7 @@ function hevent:handleScript(text,_playername,_group)
   if (ADMIN == true) and (doublecheck == ADMINPASSWORD2) then
     self:E({"attempting to run script"})
     hm(string.format("%s knew both the magic words Now do they know how to code?",_playername))
-    local ran, errorMSG = pcall(function() loadstring(script))()  end)
+    local ran, errorMSG = pcall(function() loadstring(script)  end)
 		if not ran then
       MESSAGE:New(string.format("Script Run was not successful errored with %s",errorMSG),30):ToGroup(_group)
       hm(string.format("%s apparently did not know how to code! check the logs for the error msg please"))
@@ -474,7 +474,7 @@ function hevent:handleTankerRequest(text,coord,_col,_playername,_group)
     -- check that the unit is actually a tanker.
     local tanker = tankergroup:GetUnit(0)
     if tanker:IsTanker() ~= true then
-      MESSAGE:New(string.format("%s is not a valid tanker group and is unable to be redirected",tankergroupname),30):ToGroup(_Resume
+      MESSAGE:New(string.format("%s is not a valid tanker group and is unable to be redirected",tankergroupname),30):ToGroup(_group)
       return
     end
     -- if the tankers not well ours we don't command it.
@@ -641,7 +641,7 @@ end
 
 --- handle an admin attempt.
 function hevent:handleeadmin(text,_playername)
-  local keywords=UTILS.split(text, ",")
+  local keywords=UTILS.Split(text, ",")
   local wrongpassword = false
   BASE:E({keywords=keywords})
   for _,keyphrase in pairs(keywords) do
@@ -671,7 +671,7 @@ function hevent:handleeadmin(text,_playername)
 end
   --- Silent version of the above.
 function hevent:rhandleeadmin(text,_group,_playername)
-  local keywords=UTILS.split(text, ",")
+  local keywords=UTILS.Split(text, ",")
   BASE:E({keywords=keywords})
   for _,keyphrase in pairs(keywords) do
     if keyphrase == _PASSWORD then
@@ -694,7 +694,7 @@ end
 
 function newhandlespawn(text,coord,_group,_playername)
   BASE:E({"Spawn Request",text,coord,_playername})
-  local keywords=UTILS.split(text, ",")
+  local keywords=UTILS.Split(text, ",")
   local unit = nil
   local name = nil
   local heading = nil
@@ -704,7 +704,7 @@ function newhandlespawn(text,coord,_group,_playername)
   local rl = 150
   local ru = 450
   for _,keyphrase in pairs(keywords) do
-     local str=UTILS.split(keyphrase, "=")
+     local str=UTILS.Split(keyphrase, "=")
       local key=str[1]
       local val=str[2]
     if key:lower():find("u") then
@@ -774,11 +774,11 @@ end
 
 --- Routes Mass Group.
 function hevent:routemassgroup(text,coord,_playername,_group)
-  local keywords=UTILS.split(text,",")
+  local keywords=UTILS.Split(text,",")
   local dist = 25000
   local col = "Red"
   for _,keyphrase in pairs(keywords) do
-    local str=UTILS.split(keyphrase, "=")
+    local str=UTILS.Split(keyphrase, "=")
     local key=str[1]
     local val=str[2]
     if key:lower():find("d") then
@@ -794,7 +794,7 @@ end
 --- handle spawns.
 function hevent:handledespawn(text)
   BASE:E({"DeSpawn Request",text})
-  local keywords=UTILS.split(text, ",")
+  local keywords=UTILS.Split(text, ",")
   local unit = nil
   BASE:E({"DESPAWN", keywords=keywords})
   unit = keywords[2]
@@ -815,7 +815,7 @@ end
 --- Message to all
 function hevent:msgtoall(text)
   BASE:E({"Msg to all",text})
-  local keywords=UTILS.split(text,"|")
+  local keywords=UTILS.Split(text,"|")
   local msg = keywords[2]
   if msg ~= nil then
     MESSAGE:New(msg,15):ToAll()

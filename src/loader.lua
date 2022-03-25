@@ -4,9 +4,10 @@ _VERSION = 0.1
 _LASTUPDATE = "24/02/1011"
 _DEBUG = true
 _PASSWORD = "test"
-trigger.action.setUserFlag(100,0)
+
 trigger.action.setUserFlag("SSB",100)
-_SRCPATH = "\\syria\\src\\"
+_SRCPATH = "syria\\src\\"
+dofile(lfs.writedir() .. _SRCPATH .. "utils.lua")
 _HMLOADED = false
 _USEHYPEMAN = false
 ADMIN = false
@@ -25,11 +26,11 @@ function rlog( Arguments )
         if DebugInfoFrom then
           LineFrom = DebugInfoFrom.currentline
         end
-        env.info( string.format( "%6d(%6d)/%1s:%30s%05d.%s(%s)" , LineCurrent, LineFrom, "Error", "Rob Debug", ":", Function, routines.utils.oneLineSerialize( Arguments ) ) )
-        hm(string.format( "%6d(%6d)/%1s:%30s%05d.%s(%s)" , LineCurrent, LineFrom, "Error", "Rob Debug", ":", Function, routines.utils.oneLineSerialize( Arguments ) ) )
+        env.info( string.format( "%6d(%6d)/%1s:%30s%05s.%s(%s)" , LineCurrent, LineFrom, "Error", "Rob Debug", ":", Function, RGUTILS.oneLineSerialize( Arguments ) ) )
+        hm(string.format( "%6d(%6d)/%1s:%30s%05s.%s(%s)" , LineCurrent, LineFrom, "Error", "Rob Debug", ":", Function, RGUTILS.oneLineSerialize( Arguments ) ) )
     else
-      env.info( string.format( "%1s:%30s%05d(%s)" , "Error", "Rob Debug", ":", routines.utils.oneLineSerialize( Arguments ) ) )
-      hm(string.format( "%1s:%30s%05d(%s)" , "Error", "Rob Debug", ":", routines.utils.oneLineSerialize( Arguments ) ) )
+      env.info( string.format( "%1s:%30s%05s(%s)" , "Error", "Rob Debug", ":", RGUTILS.oneLineSerialize( Arguments ) ) )
+      hm(string.format( "%1s:%30s%05s(%s)" , "Error", "Rob Debug", ":", RGUTILS.oneLineSerialize( Arguments ) ) )
     end
 end
 
@@ -62,3 +63,26 @@ if _USEHYPEMAN then
     _HMLOADED = true
 end
 _loadfile("eventhandler.lua",_SRCPATH)
+_loadfile("farpcreator.lua",_SRCPATH)
+
+
+
+-- Temp stuff for testing on the Syria Misson -- 
+
+
+myhandler = hevent:New(true,true,false,60,60)
+myhandler:Start()
+
+
+
+myfarpcontrol = FARPCREATOR:New("Tanf Control","Super","Convoytemplate","servicevehicletemplate",country.id.USA)
+-- start it.
+atzone = ZONE:New("attanf")
+atco = atzone:GetCoordinate()
+
+myfarpcontrol:UseStartPoints(true)
+myfarpcontrol:AddStartPoint(atco)
+myfarpcontrol:UseClosestPoint(true)
+myfarpcontrol:AddFarpsToPoints(true)
+myfarpcontrol:Start()
+  
