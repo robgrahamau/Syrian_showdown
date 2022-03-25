@@ -4,13 +4,14 @@ _VERSION = 0.1
 _LASTUPDATE = "24/02/1011"
 _DEBUG = true
 _PASSWORD = "test"
-
+ADMINPASSWORD2 = "testing"
 trigger.action.setUserFlag("SSB",100)
 _SRCPATH = "syria\\src\\"
 dofile(lfs.writedir() .. _SRCPATH .. "utils.lua")
 _HMLOADED = false
 _USEHYPEMAN = false
 ADMIN = false
+
 TANKERTIMER = 0
 TANKER_COOLDOWN = (1)*60
 function rlog( Arguments )
@@ -26,11 +27,11 @@ function rlog( Arguments )
         if DebugInfoFrom then
           LineFrom = DebugInfoFrom.currentline
         end
-        env.info( string.format( "%6d(%6d)/%1s:%30s%05s.%s(%s)" , LineCurrent, LineFrom, "Error", "Rob Debug", ":", Function, RGUTILS.oneLineSerialize( Arguments ) ) )
-        hm(string.format( "%6d(%6d)/%1s:%30s%05s.%s(%s)" , LineCurrent, LineFrom, "Error", "Rob Debug", ":", Function, RGUTILS.oneLineSerialize( Arguments ) ) )
+        env.info( string.format( "%6d(%6d)/%1s:%30s%05s.%s(%s)" , LineCurrent, LineFrom, "Info", "Rob Debug", ":", Function, RGUTILS.oneLineSerialize( Arguments ) ) )
+        hm(string.format( "%6d(%6d)/%1s:%30s%05s.%s(%s)" , LineCurrent, LineFrom, "Info", "Rob Debug", ":", Function, RGUTILS.oneLineSerialize( Arguments ) ) )
     else
-      env.info( string.format( "%1s:%30s%05s(%s)" , "Error", "Rob Debug", ":", RGUTILS.oneLineSerialize( Arguments ) ) )
-      hm(string.format( "%1s:%30s%05s(%s)" , "Error", "Rob Debug", ":", RGUTILS.oneLineSerialize( Arguments ) ) )
+      env.info( string.format( "%1s:%30s%05s(%s)" , "Info", "Rob Debug", ":", RGUTILS.oneLineSerialize( Arguments ) ) )
+      hm(string.format( "%1s:%30s%05s(%s)" , "Info", "Rob Debug", ":", RGUTILS.oneLineSerialize( Arguments ) ) )
     end
 end
 

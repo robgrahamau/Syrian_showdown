@@ -1,6 +1,5 @@
 rlog("Global Event Handler Events Version 1.00")
 
-
 adminspawned = {}
 hevent = {
     ClassName = "Handle_Events",
@@ -9,6 +8,7 @@ hevent = {
     _handlelqm = false,
     _handlemarkers = false,
     spawnedunits = {},
+    spawnedgroup = {},
     blueprefix = "cjtf_blue_",
     redprefix = "cjtf_red_",
     neutralprefix = "untf_",
@@ -23,25 +23,24 @@ function hevent:New(_markers,_lqm,_death,_tankertime,_tankercooldown)
     self.TANKER_COOLDOWN = _tankercooldown or TANKER_COOLDOWN
     return self
 end
-
+--- Sets the Blue Spawn Prefix
 function hevent:setblueprefix(bp)
   if bp ~= nil then
     self.blueprefix = bp
   end
 end
-
+--- Sets the Red Spawn Prefix
 function hevent:setredprefix(rp)
   if rp ~= nil then
     self.redprefix = rp
   end
 end
-
+--- Sets the Neutral Spawn Prefix
 function hevent:setunprefix(up)
   if up ~= nil then
     self.neutralprefix = up
   end
 end
-
 
 function hevent:Start()
   self:E({"Starting Handle_Events"})  
@@ -81,7 +80,7 @@ function hevent:OnEventLandingQualityMark(EventData)
     hm("**Super Carrier LSO** \n> ** " .. where .. "** \n> **Landing Grade for  " .. who .. " **Aircraft Type:** " .. t .. " \n> **Grade:** " .. comment .. "." )
     hmlso( "**Super Carrier LSO** \n> ** " .. where .. "** \n> **Landing Grade for  " .. who .. " **Aircraft Type:** " .. t .. " \n> **Grade:** " .. comment .. "."  )
 end
-
+--- Handles our OnEventMarkRemove
 function hevent:OnEventMarkRemoved(EventData)
   if EventData.text~=nil and EventData.text:lower():find("-") then
     local dcsgroupname = EventData.IniDCSGroupName
@@ -104,7 +103,7 @@ function hevent:OnEventMarkRemoved(EventData)
     elseif EventData.text:lower():find("-help") then
       self:handlehelp(_group)
     elseif EventData.text:lower():find("-smoke") then
-      self:handleSmoke(_text,_coord,_coalition,_group)
+      self:handleSmoke(text,coord,_coalition,_group,_playername)
     elseif EventData.text:lower():find("-groupcheck") then
       self:groupchecker()
     elseif EventData.text:lower():find("-flare") then
@@ -187,7 +186,7 @@ function hevent:OnEventMarkRemoved(EventData)
       end
     elseif EventData.text:lower():find("-runscript") then
       hm("Wow ok " .. playername .. "is attempting to run a script.. hope they know the magic words")
-      self:handleScript(text2,playername,_group)
+      self:handleScript(text2,_playername,_group)
     elseif EventData.text:lower():find("-msgall") or EventData.text:lower():find("-ma") then
       if ADMIN == true then
         self:msgtoall(text2)
@@ -197,13 +196,11 @@ function hevent:OnEventMarkRemoved(EventData)
     end
   end
 end
-
 --- handles our help requests.
 function hevent:handlehelp(_group)
   local msgtext = "Map Command Help Requested. The Following are valid commands for markers any with a - at the start require you to delete the marker. \n -help (this command) \n -smoke,red or -smoke,green or -smoke,blue or -smoke,white (Spawn a random smoke near the location) \n -flare (fire flares from the location of the nearest friendly forces) \n -weather (request a GRIBS weather report from the location of the marker) \n%d"
   local _msg = MESSAGE:New(msgtext,15):ToGroup(_group)
 end
-
 --- checks current group and unit count for all coalitions.
 function hevent:groupchecker()
   local tempset = SET_UNIT:New():FilterActive():FilterOnce()
@@ -240,7 +237,6 @@ function hevent:groupchecker()
   end)
   MESSAGE:New(String.format("Current Group Count is: %d Active Groups, \n • Blue Groups: %d , Red Groups: %d , Neutral Groups: %d \n Unit Count is: %d Units \n • Blue Units: %d , Red Units: %d , Neutral Units: %d ",gcounter,gb,gr,gn,ucounter,ub,ur,un),30):ToAll()
 end
-
 --- Handles our smoke marker rounds..
 function hevent:handleSmoke(text,_coord,col,_group,_playername)
   local keywords=UTILS.Split(text, ",")
@@ -257,6 +253,8 @@ function hevent:handleSmoke(text,_coord,col,_group,_playername)
   end
   local _dist = 10000
   local _inrange = false
+  local _time = 30
+  local _unitdistance = 10000
   local gunits = SET_GROUP:New():FilterCategoryGround():FilterCoalitions(_side):FilterActive(true):FilterOnce()
   local nc = _coord:GetRandomCoordinateInRadius(500,100)
   -- if admin is true we bypass a chunk of stuff and just automatically dump ourselves in range.
@@ -272,6 +270,9 @@ function hevent:handleSmoke(text,_coord,col,_group,_playername)
           local d = gc:Get2DDistance(_coord)
           if d < _dist then
             _inrange = true
+            if d < _unitdistance then
+              _unitdistance = d
+            end
           end
         end
       end
@@ -280,7 +281,9 @@ function hevent:handleSmoke(text,_coord,col,_group,_playername)
     _inrange = true
     nc = _coord
   end
-  local msg = MESSAGE:New(string.format("Firehawk, this is %s requesting smoke at %s",_playername,_coord:ToStringMGRS()),30)
+  local _mgrs = _coord:ToStringMGRS()
+  BASE:E({"SMOKE MGRS SHOULD BE HERE",_mgrs})
+  local msg = MESSAGE:New(string.format("Firehawk, this is %s requesting smoke at %s.",_playername,_mgrs),30)
   if _col == 1 then
     msg:ToRed()
   else
@@ -288,9 +291,14 @@ function hevent:handleSmoke(text,_coord,col,_group,_playername)
   end
   hm(string.format("Firehawk, this is %s requesting smoke at %s",_playername,_coord:ToStringMGRS()))
   if _inrange then
-    local _time = math.random(30,300)  
+    -- calculate time to get smoke on target this will be (d/1000) * 5 + 30
+    _time = (_unitdistance/1000) * 5 + 30
+    local _or = (_unitdistance/100)
+    local _ir = (_unitdistance/1000) * 2
+    nc = _coord:GetRandomCoordinateInRadius(_or,_ir)
     if ADMIN == true then
       _time = 1
+      nc = _coord
     end
     msg = MESSAGE:New(string.format("%s, firehawk smoke mark request recieved estimate impact in %d seconds",_playername,_time),30)
     if _col == 1 then
@@ -362,7 +370,6 @@ function hevent:handleSmoke(text,_coord,col,_group,_playername)
     end
   end
 end
-
 --- Handles a script input requires Admin to be true + an extra password.
 -- enters by 
 -- '-runscript;somerandompassword;if JEFFSSUCK == true then socksjeff:Destroy();'
@@ -562,8 +569,7 @@ end
 -- Handle red tanker requests (we need to merge this with the above at some point.)
 function hevent:handleRedTankerRequest(text,coord,_playername,_group)
   MESSAGE:New("Red Coalition Tanker Routing Commands are Currently Not Supported",30,"Info"):ToGroup(_group)
- end
-
+end
  -- runs a mass delete command.
 function hevent:massdel(_coord,dist,_coalition,_playername)
   local delcount = 0
@@ -613,7 +619,6 @@ function hevent:deletemassgroup(text,coord,_playername)
   end
   self:massdel(coord,dist,col,_playername)
 end
-
 --- Handle a weather request.
 function hevent:handleWeatherRequest(text, coord, _group)
   local currentPressure = coord:GetPressure(0)
@@ -638,7 +643,6 @@ function hevent:handleWeatherRequest(text, coord, _group)
   MESSAGE:New(weatherString10, 30, MESSAGE.Type.Information):ToGroup(_group)
   hm('Weather Requested \n ' .. weatherString .. '\n' .. weatherString1 .. '\n' .. weatherString2 .. '\n' .. weatherString5 .. '\n' .. weatherString10 .. '\n')
 end
-
 --- handle an admin attempt.
 function hevent:handleeadmin(text,_playername)
   local keywords=UTILS.Split(text, ",")
@@ -669,7 +673,7 @@ function hevent:handleeadmin(text,_playername)
     end
   end
 end
-  --- Silent version of the above.
+--- Silent version of the above.
 function hevent:rhandleeadmin(text,_group,_playername)
   local keywords=UTILS.Split(text, ",")
   BASE:E({keywords=keywords})
@@ -691,7 +695,6 @@ function hevent:rhandleeadmin(text,_group,_playername)
   end
 end
 --- Handles spawnining in a existing template group from the mission.
-
 function newhandlespawn(text,coord,_group,_playername)
   BASE:E({"Spawn Request",text,coord,_playername})
   local keywords=UTILS.Split(text, ",")
@@ -761,7 +764,7 @@ function newhandlespawn(text,coord,_group,_playername)
       end
       BASE:E({"Spawning:",u,side,ran,heading})
       sp = sp:SpawnFromCoordinate(coord)
-      table.insert(self.adminspawned,sp)
+      table.insert(self.spawnedgroup,sp)
     else
       MESSAGE:New("Unable to spawn requested group, template group does not exist",15):ToAll()
       BASE:E({"Unable to spawn group:",unit})
@@ -771,7 +774,6 @@ function newhandlespawn(text,coord,_group,_playername)
     MESSAGE:New("unable to spawn requested group as you left out information",15):ToAll()
   end
 end
-
 --- Routes Mass Group.
 function hevent:routemassgroup(text,coord,_playername,_group)
   local keywords=UTILS.Split(text,",")
@@ -790,7 +792,6 @@ function hevent:routemassgroup(text,coord,_playername,_group)
   end
   self:routegroups(coord,dist,col,_playername)
 end
-
 --- handle spawns.
 function hevent:handledespawn(text)
   BASE:E({"DeSpawn Request",text})
@@ -811,7 +812,6 @@ function hevent:handledespawn(text)
     MESSAGE:New("And with a finger snap " .. unit .. " has become dust in the wind",10):ToAll()
   end
 end
-
 --- Message to all
 function hevent:msgtoall(text)
   BASE:E({"Msg to all",text})

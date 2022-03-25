@@ -1,0 +1,1 @@
+--- Syria Client lua, this handles our client information and data.
