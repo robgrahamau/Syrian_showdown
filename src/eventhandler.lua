@@ -7,11 +7,15 @@ hevent = {
     TANKER_COOLDOWN = 0,
     _handlelqm = false,
     _handlemarkers = false,
+    _handledead = false,
     spawnedunits = {},
     spawnedgroup = {},
     blueprefix = "cjtf_blue_",
+    bluecountry = country.id.CJTF_BLUE,
     redprefix = "cjtf_red_",
+    redcountry = country.id.CJTF_RED,
     neutralprefix = "untf_",
+    neutralcountry = country.id.UN_PEACEKEEPERS,
 }
 
 function hevent:New(_markers,_lqm,_death,_tankertime,_tankercooldown)
@@ -21,6 +25,7 @@ function hevent:New(_markers,_lqm,_death,_tankertime,_tankercooldown)
     self._handlelqm = _lqm or false
     self.TANKERTIMER= _tankertime or TANKERTIMER
     self.TANKER_COOLDOWN = _tankercooldown or TANKER_COOLDOWN
+    self._handledead = _death or false
     return self
 end
 --- Sets the Blue Spawn Prefix
@@ -144,6 +149,8 @@ function hevent:OnEventMarkRemoved(EventData)
           MESSAGE:New("No CTLD was found are you certain it's installed?",60):ToGroup(_group)
         end
       end
+    elseif EventData.text:lower():find("-rqm") then
+        self:randomspawn(text,coord,_playername,_group)
     elseif EventData.text:lower():find("-routeside") then
       if ADMIN == true then
         self:routemassgroup(text,coord,_playername,_group)
@@ -236,6 +243,68 @@ function hevent:groupchecker()
     end
   end)
   MESSAGE:New(String.format("Current Group Count is: %d Active Groups, \n • Blue Groups: %d , Red Groups: %d , Neutral Groups: %d \n Unit Count is: %d Units \n • Blue Units: %d , Red Units: %d , Neutral Units: %d ",gcounter,gb,gr,gn,ucounter,ub,ur,un),30):ToAll()
+end
+
+function hevent:randomspawn(_text,_coord,_playername,_group)
+  local keywords = UTILS.Split(_text,",")
+  local _type = ""
+  local _rand = false
+  local _groupSize = 12
+  local _spread = 150
+  local _mark = false
+  local _inf = false
+  self:E({keywords})
+  for _,keyphrase in pairs(keywords) do
+    local str=UTILS.Split(keyphrase, "=")
+    local key=str[1]
+    local val=str[2]
+    if key:lower() == "type" then
+      if val:lower() == "armour" or val:lower() == "armor" then
+        _type = "armor"
+      end
+      if val:lower() == "full" then
+        _type = "full"
+      end
+      if val:lower() == "light" then
+        _type = "lightmech"
+      end
+      if val:lower() == "mech" then
+        _type = "mech"
+      end
+      if val:lower() == "inf" then 
+        _type = "inf"
+      end
+    end
+    if key:lower() == "mark" then
+      if val:lower() == "true" or val:lower() == "t" or value:lower() == "y" then
+        _mark = true
+      end
+    end
+    if key:lower() == "random" then
+      if val:lower() == "true" then
+        _rand = true
+      end
+    end
+    if key:lower() == "size" or key:lower() == "count" then
+      _groupSize = tonumber(val)
+    end
+    if key:lower() == "m" or key:lower() == "spread" then
+      _spread = tonumber(val)
+    end
+    if key:lower() == "i" or key:lower() == "inf" then
+      if val:lower() == "true" then
+        _inf = true
+      end
+    end
+  end
+  if _rand == true then
+    _coord = _coord:GetRandomCoordinateInRadius(10000,250)
+  end
+  if _spread < (_groupSize * 3) then
+    _spread = (_groupSize * 3)
+  end
+  self:E({"Unitspawner",_type,_groupsize,_spread,_mark})
+  UNITSPAWNER:createredfor(_coord,_type,_groupSize,_spread,_mark,_inf)
 end
 --- Handles our smoke marker rounds..
 function hevent:handleSmoke(text,_coord,col,_group,_playername)

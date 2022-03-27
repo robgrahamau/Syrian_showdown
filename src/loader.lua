@@ -64,6 +64,7 @@ if _USEHYPEMAN then
     _HMLOADED = true
 end
 _loadfile("eventhandler.lua",_SRCPATH)
+_loadfile("unitspawner.lua",_SRCPATH)
 _loadfile("farpcreator.lua",_SRCPATH)
 
 
