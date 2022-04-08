@@ -1,14 +1,51 @@
-  -- TO DO
-  -- Check that this works.
-  
-  
-  --- Farp Creator original code base by [62VAC] Targs, O-O'd by Robert Graham.
+  -- TO DO (Rob)
+  -- see about moving some of the hard coded stuff out allowing for templates for the farp etc.
+    
+  --- Farp Creator original code base by [62VAC] Targs, O-O'd and expanded by Rob Graham.
   -- This class aims to allow you to request a convoy to make a farp.
   -- It works by looking for a helicopter group and where that group is landed 
   -- it then will spawn and route a 'convoy' to that location and if the convoy group arrives it will deploy a farp structure.
   -- All values are required to be entered.
-  
-  
+  -- Use is rather simple to do you use to instantate the class you need to use the following
+  -- 
+  -- -- First we need 2 templates a Convoy Template and an actual Farp service template
+  -- myservicetemplate = "servicetemplate" -- this is the vehciles that will spawn at the farp
+  -- myconvoytemplate = "ConvoyTemplate"   -- this is the actual convoy that will drive to the farp.
+  -- 
+  -- -- Now we are going to make the actual farp controller we need a few things here, a Name that will show up in the menu,
+  -- -- The prefix of the groups that will be able to use the menu/controller
+  -- -- the two templates we made above
+  -- -- and finally the country that we want the farp to be made from.
+  --
+  --  myfarpcontrol = FARPCREATOR:New("My Farp Controller","Scouts",myconvoytemplate,myservicetemplate,country.id.USA)
+  --  
+  -- -- We can now if we want to start the class with mynewfarpchecker:Start()
+  -- -- However if we wish we can also set a few 'options' to customise how our farp controller works
+  -- -- such as if all the conoys will come from a given coordinate (the easiest means is to use a zone and grab the coord but you could use any MOOSE COORDINATE)
+  -- -- if we are using those zones if the class will use the closest zone
+  -- -- and finally if we want to add the farps to the zone.
+  -- -- To add a zone we create a zone in the ME and then add it's to the farp controller
+  -- -- 
+  -- -- newzone = ZONE:New("farpconvoystart") -- Our zone
+  -- -- newzonecoordinate = newzone:GetCoordinate() -- Our Zone Coord
+  -- --
+  -- -- Now we tell the controller we want to use start zones
+  -- myfarpcontrol:UseStartPoints(true)
+  -- -- And then we add the start point to it. 
+  -- myfarpcontrol:AddStartPoint(newzonecoordinate)
+  -- -- Now we are going to tell it that we want it to comes from the closest point to were we request the farp.
+  -- myfarpcontrol:UseClosestPoint(true)
+  -- -- and that when the FARP is made to make it a valid new starting point for convoys
+  -- myfarpcontrol:AddFarpsToPoints(true)
+  -- finally we are going to start our farp
+  -- myfarpcontrol:Start()
+  --
+  -- Some things to note however about the class are that it currently has some values HARD CODED.
+  -- These are the 3 convoy limit.
+  -- the radio codes for the farp
+  -- and some radius checks. 
+  -- the actual 'farp' itself is currently all hardcoded in layout in the spawn code
+   
   -- creates our base class
   FARPCREATOR = {
     Classname = "Targs FARP Creator",
@@ -17,7 +54,7 @@
     clientmenus = {},
     scheduler = nil,
     schedulerid = nil,
-    debug = true,
+    debug = false,
     OuterRadius = 10000,
     InnerRadius = 500,
     maxconvoys = 3,
@@ -25,6 +62,7 @@
     countryid = nil,
     convoytemplate = nil,
     servicetemplate = nil,
+    convoyspeed = 50,
     convoys = {},
     farpcounter = 0,
     beattime = 10,
@@ -78,7 +116,7 @@ function FARPCREATOR:New(name,prefix,convoytemplate,servicetemplate,countryid)
     BASE:E({self.name,"Created FARP"})
     return self
 end
-  
+
   --- Allows for the changing of the radius's for this Farp convoy checks
   -- @param #integer inner - The inner radius of the spawn ie the closest point to the client that a convoy may spawn in meters
   -- @param #integer outer - The outer radius of the spawn ie the furtherest point to the client that a convoy may spawn in meters
@@ -97,6 +135,14 @@ function FARPCREATOR:AddStartPoint(_coord)
     table.insert(self.startpoints,_coord)
     return self
 end
+--- Set the convoy speed in km/h
+-- @param integer speed in km.
+-- @return self
+function FARPCREATOR:SetConvoySpeed(_speed)
+  self.convoyspeed = _speed 
+  return self
+end
+
 --- Removes a start point from the table list.
 -- @param #coordinate _cord - the coordinate to remove from the list.
 -- @return self.
@@ -138,19 +184,19 @@ end
   -- @param #GROUP targetgroup - Our client target group
   -- @param #CLIENT _client - Moose CLIENT for the player
   -- @param #MENU topemnu - the Moose MENU reference we are making the menu part of.
-  function FARPCREATOR:CreateMenu(targetgroup,_client)
-    local group = _client:GetGroup()
-    local gid = group:GetID()
-    if group and gid then
-      if not self.menuadded[gid] then  
-        self.menuadded[gid] = true
-        local _rootPath = missionCommands.addSubMenuForGroup(gid,"" .. self.name .. " Farp Control")
-        local _spawn = missionCommands.addCommandForGroup(gid,"Farp Convoy Request",_rootPath,self.SpawnConvoy,self,_client)
-      end
+function FARPCREATOR:CreateMenu(targetgroup,_client)
+  local group = _client:GetGroup()
+  local gid = group:GetID()
+  if group and gid then
+    if not self.menuadded[gid] then
+      self.menuadded[gid] = true
+      local _rootPath = missionCommands.addSubMenuForGroup(gid,"" .. self.name .. " Farp Control")
+      local _spawn = missionCommands.addCommandForGroup(gid,"Farp Convoy Request",_rootPath,self.SpawnConvoy,self,_client)
     end
+  end
   --   local menuname = "" .. self.name .. " FARP Convoy Request"
   --  self.client[_client.ObjectName] = MENU_GROUP_COMMAND:New(targetgroup,menuname,topmenu,self.FARPCREATOR,{self,_client}) -- add our menu, to targetgroup, name it spawn farp, add to top menu, call farpcreation, pass _client as the variable.
-  end
+end
   
   --- F10 Menu Creation
   -- Ideally I want to do this so it only runs through this shit once for a client when it first becomes alive.
@@ -158,14 +204,14 @@ end
   -- we will look into it later for now we just want it to work.
   function FARPCREATOR:MenuCreator()
     BASE:E({"self.name","Menu Creator"})
-    self.clients:ForEachClient(function(MooseClient) 
+    self.clients:ForEachClient(function(MooseClient)
       if MooseClient:GetGroup() ~= nil then
         local _group = MooseClient:GetGroup()
         self:CreateMenu(_group,MooseClient,self.topmenu)
       end
     end)
   end
-  
+
   --- Starts our Heart Beat for the Creator.
   -- @return self
   function FARPCREATOR:Start()
@@ -333,7 +379,7 @@ end
       BASE:E({"Spawned."})
     end
     temptable.FarpServiceConvoy:SetAIOn()
-    temptable.FarpServiceConvoy:RouteGroundOnRoad(temptable.FARPCoordinate,45,1,"OnRoad")
+    temptable.FarpServiceConvoy:RouteGroundOnRoad(temptable.FARPCoordinate,self.convoyspeed,1,"OnRoad")
     self.convoys[cid] = temptable -- put temp table into convoys under the client ID for references.
     MESSAGE:New("New FARP Convoy is enroute to your location",60):ToClient(_client)
   end
