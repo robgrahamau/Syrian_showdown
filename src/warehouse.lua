@@ -13,6 +13,22 @@ whouse.ezor:Start()
 whouse.tanf:Start()
 whouse.palmyra:Start()
 
+function GETWAREHOUSE(_warehouse)
+    local _wh = nil
+    local _loc = nil
+    if _warehouse == "ezor" or _warehouse == "deir ez-zor" or _warehouse == "ez-zor" then
+        _wh = whouse.ezor
+        _loc = "ezor"
+    elseif _warehouse == "tanf" or _warehouse == "at tanf" or _warehouse == "al tanf" then
+        _wh = whouse.tanf
+        _loc = "tanf"
+    elseif _warehouse == "palmyra" then
+        _wh = whouse.palmyra
+        _loc = "palmyra"
+    end
+    rlog({_wh,_loc})
+    return _wh, _loc
+end
 
 function ADDTOWAREHOUSE(_asset,_amount,_warehouse,_attribute,_cargohold,_weight,_load,_skill)
     _attribute = _attribute or nil
@@ -58,23 +74,24 @@ end
 
 if initalstart == true then
     -- ISIS Items
-    ADDTOWAREHOUSE("t_syria_inf",10,whouse.ezor)
-    ADDTOWAREHOUSE("t_syria_inf_manpad",6,whouse.ezor)
-    ADDTOWAREHOUSE("Mi8_transport",6,whouse.ezor,WAREHOUSE.Attribute.AIR_TRANSPORTHELO)
-    ADDTOWAREHOUSE("t_t55",9,whouse.ezor)
-    ADDTOWAREHOUSE("t_t72b",3,whouse.ezor)
-    ADDTOWAREHOUSE("t_zsu57",12,whouse.ezor)
-    ADDTOWAREHOUSE("t_hlzu23",12,whouse.ezor)
-    ADDTOWAREHOUSE("t_lckord",24,whouse.ezor)
-    ADDTOWAREHOUSE("t_hlkord",24,whouse.ezor)
-    ADDTOWAREHOUSE("t_btr80",12,whouse.ezor)
-    ADDTOWAREHOUSE("t_btrrd",12,whouse.ezor)
+    ADDTOWAREHOUSE("syrian platoon",10,whouse.ezor)
+    ADDTOWAREHOUSE("syrian manpad",6,whouse.ezor)
+    ADDTOWAREHOUSE("Mi8 transport",6,whouse.ezor,WAREHOUSE.Attribute.AIR_TRANSPORTHELO)
+    ADDTOWAREHOUSE("t55",9,whouse.ezor)
+    ADDTOWAREHOUSE("t72b",3,whouse.ezor)
+    ADDTOWAREHOUSE("zsu57",12,whouse.ezor)
+    ADDTOWAREHOUSE("hl zu23",12,whouse.ezor)
+    ADDTOWAREHOUSE("lc kord",24,whouse.ezor)
+    ADDTOWAREHOUSE("lc dshk",24,whouse.ezor)
+    ADDTOWAREHOUSE("btr80",12,whouse.ezor)
+    ADDTOWAREHOUSE("btr-rd",12,whouse.ezor)
 
 
     -- US Army Items
-    ADDTOWAREHOUSE("t_us_inf_standard",10,whouse.tanf)
+    ADDTOWAREHOUSE("us platoon",10,whouse.tanf)
 
 end
+
 
 function MAPDEPLOYMENT(_asset,_specifictype,_amount,_warehouse,_loc,_coordinate)
     local _asset = _asset or nil
@@ -102,28 +119,27 @@ function MAPTRANSFER(_asset,_specifictype,_amount,_warehouse,_destination,_trans
 
 end
 
-function WAREHOUSEAMOUNTS(_group,_warehouse,_col)
+function WAREHOUSEAMOUNTS(_group,_warehouse,_unittype,_specifictype,_col)
     local _wh = nil
     local _loc = nil
-    
-    if _warehouse == "ezor" or _warehouse == "deir ez-zor" or _warehouse == "ez-zor" then
-        _wh = whouse.ezor
-        _loc = "ezor"
-    elseif _warehouse == "tanf" or _warehouse == "at tanf" or _warehouse == "al tanf" then
-        _wh = whouse.tanf
-        _loc = "tanf"
-    elseif _warehouse == "palmyra" then
-        _wh = whouse.palmyra
-        _loc = "palmyra"
-    end
+    local _unittype = _unittype or nil
+    local _specifictype = _specifictype or nil
+    _wh, _loc = GETWAREHOUSE(_warehouse)
 
     if _wh:GetCoalition() == _col then
-        local stock = _wh:GetStockInfo()
+        if _specifictype ~= nil then
+        local stock = _wh:GetNumberOfAssets(WAREHOUSE.Descriptor.GROUPNAME,_specifictype)
+        RGUTILS.msg(string.format("Current Stock Levels for %n at warehouse %n are %d",_specifictype,_warehouse,stock),_group,30)
         rlog({"Warehouseamounts:",stock})
+        else
+        local stock = _wh:GetNumberOfAssets(WAREHOUSE.Descriptor.ATTRIBUTE,_unittype)
+        RGUTILS.msg(string.format("Current Stock Levels for %n at warehouse %n are %d",_unittype,_warehouse,stock),_group,30)
+        rlog({"Warehouseamounts:",stock})
+        end
     end
 end
 
-function WAREHOUSEHANDLER(_group,_warehouse,_unittype,_specifictype,_amount,_requesttype,_towarehouse,_coordinate,_col)
+function WAREHOUSEHANDLER(_group,_warehouse,_unittype,_specifictype,_amount,_requesttype,_coordinate,_col)
     rlog({"WAREHOUSEHANDLER:",_group,_warehouse,_unittype,_specifictype,_amount,_requesttype,_towarehouse,_col})
     local checker = RGUTILS.groupchecker()
     if _col == 1 then
@@ -147,16 +163,7 @@ function WAREHOUSEHANDLER(_group,_warehouse,_unittype,_specifictype,_amount,_req
     if _requesttype == "route" then 
         local _wh = nil
         local _loc = nil
-        if _warehouse == "ezor" or _warehouse == "deir ez-zor" or _warehouse == "ez-zor" then
-            _wh = whouse.ezor
-            _loc = "ezor"
-        elseif _warehouse == "tanf" or _warehouse == "at tanf" or _warehouse == "al tanf" then
-            _wh = whouse.tanf
-            _loc = "tanf"
-        elseif _warehouse == "palmyra" then
-            _wh = whouse.palmyra
-            _loc = "palmyra"
-        end
+        _wh, _loc = GETWAREHOUSE(_warehouse)
         if _wh == nil or _loc == nil then
             rlog({"ERROR IN WAREHOUSEHANDLER, Route _wh,_loc",_wh,_loc})
         end
@@ -188,20 +195,9 @@ function WAREHOUSETRANSFER(_group,_warehouse,_unittype,_specifictype,_amount,_to
 
     local _wh = nil
     local _dest = nil
-    if _warehouse == "ezor" or _warehouse == "deir ez-zor" or _warehouse == "ez-zor" then
-        _wh = whouse.ezor
-    elseif _warehouse == "tanf" or _warehouse == "at tanf" or _warehouse == "al tanf" then
-        _wh = whouse.tanf
-    elseif _warehouse == "palmyra" then
-        _wh = whouse.palmyra
-    end
-    
-    if _towarehouse == "ezor" or _towarehouse == "deir ez-zor" or _towarehouse == "ez-zor" then
-        _dest = whouse.ezor
-    elseif _towarehouse == "tanf" or _towarehouse == "at tanf" or _towarehouse == "al tanf" then
-        _dest = whouse.tanf
-    elseif _towarehouse == "palmyra" then
-        _dest = whouse.palmyra
-    end    
+    local _loc = nil
+    _wh, _loc = GETWAREHOUSE(_warehouse)
+    _dest, _loc = GETWAREHOUSE(_towarehouse)
+
     MAPTRANSFER(_unittype,_specifictype,_amount,_wh,_dest,_transporttype,_transportamount)
 end

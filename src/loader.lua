@@ -72,7 +72,7 @@ _loadfile("eventhandler.lua",_SRCPATH)
 _loadfile("unitspawner.lua",_SRCPATH)
 _loadfile("farpcreator.lua",_SRCPATH)
 _loadfile("warehouse.lua",_SRCPATH)
-
+_loadfile("moosectld.lua",_SRCPATH)
 
 
 -- Temp stuff for testing on the Syria Misson -- 
