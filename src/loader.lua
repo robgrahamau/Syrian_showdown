@@ -7,13 +7,18 @@ _PASSWORD = "test"
 ADMINPASSWORD2 = "testing"
 trigger.action.setUserFlag("SSB",100)
 _SRCPATH = "syria\\src\\"
+_PERSISTANCEPATH = "syra\\"
 dofile(lfs.writedir() .. _SRCPATH .. "utils.lua")
 _HMLOADED = false
 _USEHYPEMAN = false
 ADMIN = false
-
+initalstart = true
 TANKERTIMER = 0
 TANKER_COOLDOWN = (1)*60
+BLUEUNITLIMIT = 500
+REDUNITLIMIT = 500
+
+
 function rlog( Arguments )
     if _DEBUG then
         local DebugInfoCurrent = debug.getinfo( 2, "nl" )
@@ -66,6 +71,7 @@ end
 _loadfile("eventhandler.lua",_SRCPATH)
 _loadfile("unitspawner.lua",_SRCPATH)
 _loadfile("farpcreator.lua",_SRCPATH)
+_loadfile("warehouse.lua",_SRCPATH)
 
 
 

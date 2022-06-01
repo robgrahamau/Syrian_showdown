@@ -4,11 +4,12 @@ RGCLIENT = {
     playerlist ={},
     playermap = {},
     playermenu = {},
-    self.menuadded = {},
+    menuadded = {},
     Mainmenu = nil,
     clients = nil,
     motd = "",
     roe = "",
+    name = "",
 }
 function RGCLIENT:New(_coalition)
     local self = BASE:Inherit(self,BASE:New())

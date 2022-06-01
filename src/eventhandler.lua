@@ -28,6 +28,20 @@ function hevent:New(_markers,_lqm,_death,_tankertime,_tankercooldown)
     self._handledead = _death or false
     return self
 end
+
+--- sends a message out but does a check to see if we have a valid group or not if group is nil then we send to all
+function hevent:msg(_msg,_group,_duration,_infotype,_clear)
+  _infotype = infotype or nil
+  _clear = clear or false
+  if _group == nil then
+    MESSAGE:New(_msg,_duration,_infotype,_clear):ToAll()
+    self:E({_msg,_duration,_group})
+  else
+    MESSAGE:New(_msg,_duration,_infotype,_clear):ToGroup(_group)
+    self:E({_msg,_duration,_group})
+  end
+end
+
 --- Sets the Blue Spawn Prefix
 function hevent:setblueprefix(bp)
   if bp ~= nil then
@@ -126,8 +140,8 @@ function hevent:OnEventMarkRemoved(EventData)
       -- ctld drop.
       if ADMIN == true then
         if ctld ~= nil then
-          self:E({"attempting to spawn a fob"})
-          MESSAGE:New("Attempting to spawn a fob lets see if it breaks",30):ToGroup(_group)
+          self:E({"attempting to spawn a CTLD fob"})
+          self:msg("Attempting to spawn a CTLD fob",_group,30)
           local _unitId = ctld.getNextUnitId()
           local _name = "ctld Deployed FOB #" .. _unitId
           local _fob = nil
@@ -146,8 +160,10 @@ function hevent:OnEventMarkRemoved(EventData)
             table.insert(ctld.builtFOBS, _fob:getName())
           end
         else
-          MESSAGE:New("No CTLD was found are you certain it's installed?",60):ToGroup(_group)
+          self:msg("No CTLD was found are you certain it's installed and active?",_group,30)
         end
+      else
+        self:msg("Unable, Admin commands need to be active to use the ctldfob command",_group,30)
       end
     elseif EventData.text:lower():find("-rqm") then
         self:randomspawn(text,coord,_playername,_group)
@@ -155,19 +171,19 @@ function hevent:OnEventMarkRemoved(EventData)
       if ADMIN == true then
         self:routemassgroup(text,coord,_playername,_group)
       else
-        MESSAGE:New("Unable, Admin Commands need to be active to use that command",15):ToGroup(_group)
+        self:msg("Unable, Admin commands need to be active to use the routeside command",_group,30)
       end
     elseif EventData.text:lower():find("-massdel") then
       if ADMIN == true then
         self:deletemassgroup(text,coord,_playername)
       else
-        MESSAGE:New("Unable, Admin Commands need to be active to use that command",15):ToGroup(_group)
+        self:msg("Unable, Admin commands need to be active to use the massdel command",_group,30)
       end
     elseif EventData.text:lower():find("-explode") then
       if ADMIN == true then
         self:handleExplosion(text,coord,_playername,_group)
       else
-        MESSAGE:New("Unable, Admin Commands need to be active to use that command",15):ToGroup(_group)
+        self:msg("Unable, Admin commands need to be active to use the -explode command",_group,30)
       end
     elseif EventData.text:lower():find("-admin") then
         self:handleeadmin(text,_playername)
@@ -177,36 +193,215 @@ function hevent:OnEventMarkRemoved(EventData)
       if ADMIN == true then
         self:newhandlespawn(text2,coord,_group,_playername)
       else
-        MESSAGE:New("Admin Commands need to be active to spawn new units",15):ToGroup(_group)
+        self:msg("Unable, Admin commands need to be active to use the spawn command",_group,30)
       end
     elseif EventData.text:lower():find("-load") then
       if ADMIN == true then
-        dofile(lfs.writedir() .."pg\\input.lua")
+        _loadfile("input.lua",_PERSISTANCEPATH)
+        self:msg("input.lua should have completed its run",_group,30)
       else
-        MESSAGE:New("Admin Commands need to be active to input a file",15):ToGroup(_group)
+        self:msg("unable, Admin Commands need to be active to input a file",_group,30)
       end
     elseif EventData.text:lower():find("-despawn") or EventData.text:lower():find("-ds") then
       if ADMIN == true then
         self:handledespawn(text2,_playername,_group)
       else
-        MESSAGE:New("Admin Commands need to be active to despawn units",15):ToGroup(_group)
+        self:msg("Unable, Admin Commands need to be active to use the despawn command",_group,30)
       end
-    elseif EventData.text:lower():find("-runscript") then
-      hm("Wow ok " .. playername .. "is attempting to run a script.. hope they know the magic words")
-      self:handleScript(text2,_playername,_group)
+    --elseif EventData.text:lower():find("-runscript") then
+    --  hm("Wow ok " .. playername .. "is attempting to run a script.. hope they know the magic words")
+    --  self:handleScript(text2,_playername,_group)
     elseif EventData.text:lower():find("-msgall") or EventData.text:lower():find("-ma") then
       if ADMIN == true then
         self:msgtoall(text2)
       else
-        MESSAGE:New("Admin Commands need to be active to message all",15):ToGroup(_group)
+        self:msg("Unable, Admin commands need to be active to use msgall",_group,30)
       end
+    elseif EventData.text:lower():find("-deploy") then
+      self:warehousedeploy(text,text2,coord,_playername,_group,_coalition)
+    elseif EventData.text:lower():find("-transfer") then
+      self:warehousetransfer(text,text2,_playername,_group,_coalition)
     end
   end
 end
+
+--- handles our warehouse transfer requests
+function hevent:warehousetransfer(_text,_text2,_playername,_group,_col)
+  local keywords = UTILS.Split(_text2,",")
+  local _warehouse = nil
+  local _towarehouse = nil
+  local _unittype = nil
+  local _specifictype = nil
+  local _requesttype = WAREHOUSE.TransportType.SELFPROPELLED
+  local _amount = 0
+  local _transportamount = nil
+  self:E({keywords})
+  -- get our information so we can work out what we are doing.
+  for _,keyprhase in pairs(keywords) do
+    local str = UTILS.Split(keyprhase,"=")
+    local key=str[1]
+    local val=str[2]
+    if key:lower() == "from" then
+      _warehouse = val:lower()
+    end
+    
+    if key:lower() == "dest" then
+      _towarehouse = val:lower()
+    end
+    
+    if key:lower() == "attrib" then
+      if val:lower() == "armor" then
+        _unittype = WAREHOUSE.Attribute.GROUND_TANK
+      elseif val:lower() == "apc" or val:lower() == "ifv" then 
+        _unittype = WAREHOUSE.Attribute.GROUND_APC
+      elseif val:lower() == "infantry" or val:lower() == "troops" then
+        _unittype = WAREHOUSE.Attribute.GROUND_INFANTRY
+      elseif val:lower() == "aaa" then
+        _unittype = WAREHOUSE.Attribute.GROUND_AAA
+      elseif val:lower() == "art" then
+        _unittype = WAREHOUSE.Attribute.GROUND_ARTILLERY
+      elseif val:lower() == "sam" then
+        _unittype = WAREHOUSE.Attribute.GROUND_SAM
+      elseif val:lower() == "truck" then
+        _unittype = WAREHOUSE.Attribute.GROUND_TRUCK
+      elseif val:lower() == "other" then
+        _unittype = WAREHOUSE.Attribute.GROUND_OTHER
+      end
+    end
+    if key:lower() == "type" then
+      _specifictype = val
+    end
+    if key:lower() == "n" then
+      _amount = tonumber(val)
+    end
+    
+    if key:lower() == "tt" then
+      if val:lower() == "plane" then
+        _requesttype = WAREHOUSE.TransportType.AIRPLANE
+      elseif val:lower() == "apc" then
+        _requesttype = WAREHOUSE.TransportType.APC
+      elseif val:lower() == "heli" then
+        _requesttype = WAREHOUSE.TransportType.HELICOPTER
+      elseif val:lower() == "self" then
+        _requesttype = WAREHOUSE.TransportType.SELFPROPELLED
+      end
+    end
+    if key:lower() == "tn" then
+      _transportamount = tonumber(val)
+    end
+  end
+
+  -- ok lets check our values if w, t or n are nil then we send a message telling the player to fix their shit
+  -- and then break out else, we hand this over to the warehouse script to handle the rest.
+  if _warehouse == nil then
+    self:msg("Your request for units can not be processed, you didn't include a valid warehouse",_group,30)
+    return false
+  end
+  if _unittype == nil and _specifictype == nil then
+    self:msg("Your request for units can not be processed, you didn't include a valid attribute type or you failed to include a specific unit type, valid types (,a=xxxx) are armor,apc,ifv,infantry,troops,aaa,sam,art,truck or other for attribute type or the dcs name type for unit type (t=SA-15)",_group,30)
+    return false
+  end
+  if _amount == nil or _amount == 0 then
+    self:msg("Your request for units can not be processed, you didn't include an amount of units",_group,30)
+    return false
+  end
+  if _towarehouse == nil then
+    self:msg("Your request for units can not be processed, you requested a transfer between warehouses and did not include a destination",_group,30)
+    return false
+  end
+  if _requesttype ~= WAREHOUSE.TransportType.SELFPROPELLED then
+    if _transportamount == nil or _transportamount == 0 then
+      _transportamount = 1
+      self:msg("You requested that units be transfered using something other then their own propulsion, but didn't give a value, it has been set to 1 of that type",_group,30)
+    end
+  end
+  WAREHOUSETRANSFER(_group,_warehouse,_unittype,_specifictype,_amount,_towarehouse,_requesttype,_transportamount,_col)
+end
+
+--- handles our warehouse requests
+function hevent:warehousedeploy(_text,_text2,_coord,_playername,_group,_col)
+  local keywords = UTILS.Split(_text2,",")
+  local _warehouse = nil
+  local _towarehouse = nil
+  local _unittype = nil
+  local _specifictype = nil
+  local _requesttype = "route"
+  local _amount = 0
+  self:E({keywords})
+  -- get our information so we can work out what we are doing.
+  -- currently only 1 'command' exists, route
+  for _,keyprhase in pairs(keywords) do
+    local str = UTILS.Split(keyprhase,"=")
+    local key=str[1]
+    local val=str[2]
+    if key:lower() == "w" then
+      _warehouse = val:lower()
+    end
+
+    if key:lower() == "a" then
+      if val:lower() == "armor" then
+        _unittype = WAREHOUSE.Attribute.GROUND_TANK
+      elseif val:lower() == "apc" or val:lower() == "ifv" then 
+        _unittype = WAREHOUSE.Attribute.GROUND_APC
+      elseif val:lower() == "infantry" or val:lower() == "troops" then
+        _unittype = WAREHOUSE.Attribute.GROUND_INFANTRY
+      elseif val:lower() == "aaa" then
+        _unittype = WAREHOUSE.Attribute.GROUND_AAA
+      elseif val:lower() == "art" then
+        _unittype = WAREHOUSE.Attribute.GROUND_ARTILLERY
+      elseif val:lower() == "sam" then
+        _unittype = WAREHOUSE.Attribute.GROUND_SAM
+      elseif val:lower() == "truck" then
+        _unittype = WAREHOUSE.Attribute.GROUND_TRUCK
+      elseif val:lower() == "other" then
+        _unittype = WAREHOUSE.Attribute.GROUND_OTHER
+      end
+    end
+    if key:lower() == "t" then
+      _specifictype = val
+    end
+    if key:lower() == "n" then
+      _amount = tonumber(val)
+    end
+
+    if key:lower() == "r" then
+      if val:lower() == "transfer" then
+        _requesttype = "transfer"
+      else
+        _requesttype = "route"
+      end
+    end
+
+    if key:lower() == "d" then
+      _towarehouse = val:lower()
+    end
+
+  end
+  -- ok lets check our values if w, t or n are nil then we send a message telling the player to fix their shit
+  -- and then break out else, we hand this over to the warehouse script to handle the rest.
+  if _warehouse == nil then
+    self:msg("Your request for units can not be processed, you didn't include a valid warehouse \n the command is for unit by attribute: -deploy,w=warehousename,a=type,n=amount,r=xxxx,d=warehousename were r can be route or transfer and d is only required if transfering \n or for unit by specific type -deploy,w=warehousename,t=Unittype,n=amount,r=xxx,d=warehousename",_group,30)
+    return false
+  end
+  if _unittype == nil and _specifictype == nil then
+    self:msg("Your request for units can not be processed, you didn't include a valid attribute type or you failed to include a specific unit type, valid types (,a=xxxx) are armor,apc,ifv,infantry,troops,aaa,sam,art,truck or other for attribute type or the dcs name type for unit type (t=SA-15)",_group,30)
+    return false
+  end
+  if _amount == nil or _amount == 0 then
+    self:msg("Your request for units can not be processed, you didn't include an amount of units",_group,30)
+    return false
+  end
+  if _requesttype == "transfer" and _towarehouse == nil then
+    self:msg("Your request for units can not be processed, you requested a transfer between warehouses and did not include a destination",_group,30)
+    return false
+  end
+  WAREHOUSEHANDLER(_group,_warehouse,_unittype,_specifictype,_amount,_requesttype,_towarehouse,_coord,_col)
+end
+
 --- handles our help requests.
 function hevent:handlehelp(_group)
   local msgtext = "Map Command Help Requested. The Following are valid commands for markers any with a - at the start require you to delete the marker. \n -help (this command) \n -smoke,red or -smoke,green or -smoke,blue or -smoke,white (Spawn a random smoke near the location) \n -flare (fire flares from the location of the nearest friendly forces) \n -weather (request a GRIBS weather report from the location of the marker) \n%d"
-  local _msg = MESSAGE:New(msgtext,15):ToGroup(_group)
+  local _msg = self:msg(msgtext,_group,60)
 end
 --- checks current group and unit count for all coalitions.
 function hevent:groupchecker()
@@ -246,6 +441,9 @@ function hevent:groupchecker()
 end
 
 function hevent:randomspawn(_text,_coord,_playername,_group)
+  if _playername == nil then
+    _playername = "Player"
+  end
   local keywords = UTILS.Split(_text,",")
   local _type = ""
   local _rand = false
@@ -308,6 +506,9 @@ function hevent:randomspawn(_text,_coord,_playername,_group)
 end
 --- Handles our smoke marker rounds..
 function hevent:handleSmoke(text,_coord,col,_group,_playername)
+  if _playername == nil then
+    _playername = "Player"
+  end
   local keywords=UTILS.Split(text, ",")
   self:E({keywords})
   local keyphrase= "white"
@@ -444,6 +645,9 @@ end
 -- '-runscript;somerandompassword;if JEFFSSUCK == true then socksjeff:Destroy();'
 -- really shoulnd't be used.
 function hevent:handleScript(text,_playername,_group)
+  if _playername == nil then
+    _playername = "Player"
+  end
   local keywords = UTILS.Split(text,";")
   local doublecheck = keywords[2]
   local script = keywords[3]
@@ -452,21 +656,24 @@ function hevent:handleScript(text,_playername,_group)
     hm(string.format("%s knew both the magic words Now do they know how to code?",_playername))
     local ran, errorMSG = pcall(function() loadstring(script)  end)
 		if not ran then
-      MESSAGE:New(string.format("Script Run was not successful errored with %s",errorMSG),30):ToGroup(_group)
+      self:msg(string.format("Script Run was not successful errored with %s",errorMSG),_group,30)
       hm(string.format("%s apparently did not know how to code! check the logs for the error msg please"))
       self:E({"handlescript error:",_playername,errorMSG})
     else
-      MESSAGE:New("Script Run was successful",30):ToGroup(_group)
+      self:msg("Script Run was successful",_group,30)
       hm(string.format("%s knew both the magic words and how to code it's amazing.",_playername))
     end
   else
-      MESSAGE:New(string.format("Uh, uh, uh.. %s didn't say the magic word! Are you being naughty? This is a reserved Server Admin command only",_playername,30)):ToGroup(_group)
+      self:msg(string.format("Uh, uh, uh.. %s didn't say the magic word! Are you being naughty? This is a reserved Server Admin command only",_playername),_group,30)
       hm(string.format("***Ohhh, some ones being Naughty aren't they %s***, \n `Uh, uh, uh.. you didn't say the magic word` \n https://tenor.com/view/jurassic-park-nedry-dennis-no-no-nah-you-didnt-say-the-magic-word-gif-16617306 \n Hey @Rob Graham#3967 investigate!",_playername))
   end
 end
 
 --- Handles our call to do an explosion.
 function hevent:handleExplosion(text,coord,_playername,_playergroup)
+  if _playername == nil then
+    _playername = "Player"
+  end
   local keywords=UTILS.Split(text, ",")
   local yeild = keywords[2]
   yeild = tonumber(yeild)
@@ -475,10 +682,10 @@ function hevent:handleExplosion(text,coord,_playername,_playergroup)
       yeild = 250
       local msg = string.format("Ok, who let sock near the armory?, %s initated a 250lbs explosive",_playername)
       hm(msg)
-      MESSAGE:New(msg,30):toGroup(_playergroup)
+      self:msg(msg,_playergroup,30)
     end
     coord:Explosion(yeild)
-    hm("Oh shit... I swore there was " .. yeild .. " more of this shit arou.... Ohhh there it is")
+    hm("I swore there was " .. yeild .. " more of this explosive arou.... Ohhh there it is")
   end
 end
 
@@ -501,6 +708,9 @@ end
 -- d = distance in nm
 -- s = speed in TAS.
 function hevent:handleTankerRequest(text,coord,_col,_playername,_group)
+  if _playername == nil then
+    _playername = "Player"
+  end
   local currentTime = os.time()
   if text:find("route") then
     local keywords=UTILS.Split(text, ",")
@@ -538,35 +748,35 @@ function hevent:handleTankerRequest(text,coord,_col,_playername,_group)
     end
     -- if we have no tanker name we break out with a msg.
     if tankergroupname == nil or "" then
-      MESSAGE:New("No tanker group was entered, please enter a tanker group to control and try again",30):ToGroup(_group)
+      self:msg("No tanker group was entered, please enter a tanker group to control and try again",_group,30)
       return false
     else
       tankergroup = GROUP:FindByName(tankergroupname)
       if tankergroup == nil then
-        MESSAGE:New(string.format("No Group with the name %s was found please check and try again",tankergroupname),30):ToGroup(_group)
+        self:msg(string.format("No Group with the name %s was found please check and try again",tankergroupname),_group,30)
         return
       end
     end
     -- check that the unit is actually a tanker.
     local tanker = tankergroup:GetUnit(0)
     if tanker:IsTanker() ~= true then
-      MESSAGE:New(string.format("%s is not a valid tanker group and is unable to be redirected",tankergroupname),30):ToGroup(_group)
+      self:msg(string.format("%s is not a valid tanker group and is unable to be redirected",tankergroupname),_group,30)
       return
     end
     -- if the tankers not well ours we don't command it.
     if tankergroup:GetCoalition() ~= _col then
-      MESSAGE:New(string.format("Unable to command tanker group %s as they are not of your coalition %s",tankergroupname,_playername),30):ToGroup(_group)
+      self:msg(string.format("Unable to command tanker group %s as they are not of your coalition %s",tankergroupname,_playername),_group,30)
       return
     end
     -- lets work out our cooldowns.
     local cooldown = currentTime - self.TANKERTIMER
     if cooldown < self.TANKER_COOLDOWN then 
-      MESSAGE:New(string.format("%s Requests are not available at this time.\nRequests will be available again in %d minutes", (TANKER_COOLDOWN - cooldown) / 60),30, MESSAGE.Type.Information):ToGroup(_group)
+      self:msg(string.format("%s Requests are not available at this time.\nRequests will be available again in %d minutes", (TANKER_COOLDOWN - cooldown) / 60),_group,30)
       return
     end
     -- is the tanker alive?
     if tankergroup:IsAlive() ~= true then
-      MESSAGE:New(string.format("%s is currently not avalible for tasking, it's M.I.A",tankergroupname),30,MESSAGE.Type.Information):ToGroup(_group)
+      self:msg(string.format("%s is currently not avalible for tasking, it's M.I.A",tankergroupname),_group,30)
       return
     end
     -- update our tanker time.
@@ -637,10 +847,13 @@ function hevent:handleTankerRequest(text,coord,_col,_playername,_group)
 end
 -- Handle red tanker requests (we need to merge this with the above at some point.)
 function hevent:handleRedTankerRequest(text,coord,_playername,_group)
-  MESSAGE:New("Red Coalition Tanker Routing Commands are Currently Not Supported",30,"Info"):ToGroup(_group)
+  self:msg("Red Coalition Tanker Routing Commands are Currently Not Supported",_group,30)
 end
  -- runs a mass delete command.
 function hevent:massdel(_coord,dist,_coalition,_playername)
+  if _playername == nil then
+    _playername = "Player"
+  end
   local delcount = 0
   MESSAGE:New(string.format("Mass Delete requested by admin %s at coord %s, all units within %d meters of %s coalition will be deleted",_playername,_coord.ToStringMGRS(),dist,_coalition),30,"Info"):ToAll()
   local gunits = SET_GROUP:New():FilterCategoryGround():FilterActive(true):FilterOnce()
@@ -690,6 +903,16 @@ function hevent:deletemassgroup(text,coord,_playername)
 end
 --- Handle a weather request.
 function hevent:handleWeatherRequest(text, coord, _group)
+  local weather=env.mission.weather
+  local visibility = weather.visibility.distance
+  local clouds = weather.clouds
+  local turbulance = weather.groundTurbulence
+  local visrep = UTILS.Round(UTILS.MetersToNM(visibility))
+  if visrep > 10 then
+    visrep = 10
+  end
+  local mgrs = coord:ToStringMGRS()
+
   local currentPressure = coord:GetPressure(0)
   local currentTemperature = coord:GetTemperature()
   local currentWindDirection, currentWindStrengh = coord:GetWind()
@@ -698,22 +921,25 @@ function hevent:handleWeatherRequest(text, coord, _group)
   local currentWindDirection2, currentWindStrength2 = coord:GetWind(UTILS.FeetToMeters(2000))
   local currentWindDirection5, currentWindStrength5 = coord:GetWind(UTILS.FeetToMeters(5000))
   local currentWindDirection10, currentWindStrength10 = coord:GetWind(UTILS.FeetToMeters(10000))
-  local weatherString = string.format("Requested weather: Wind from %d@%.1fkts, QNH %.2f, Temperature %d", currentWindDirection, UTILS.MpsToKnots(currentWindStrengh), currentPressure * 0.0295299830714, currentTemperature)
+  local weatherString = string.format("Requested weather at coordinates %s: \n Visibility: %d , Wind from %d@%.1fkts, QNH %.2f, Temperature %d", mgrs, visrep, currentWindDirection, UTILS.MpsToKnots(currentWindStrengh), currentPressure * 0.0295299830714, currentTemperature)
   local weatherString1 = string.format("Wind 500ft MSL: Wind from%d@%.1fkts",currentWindDirection1, UTILS.MpsToKnots(currentWindStrength1a))
   local weatherString2a = string.format("Wind 1,000ft MSL: Wind from%d@%.1fkts",currentWindDirection2, UTILS.MpsToKnots(currentWindStrength1))
   local weatherString2 = string.format("Wind 2,000ft MSL: Wind from%d@%.1fkts",currentWindDirection2, UTILS.MpsToKnots(currentWindStrength2))
   local weatherString5 = string.format("Wind 5,000ft MSL: Wind from%d@%.1fkts",currentWindDirection5, UTILS.MpsToKnots(currentWindStrength5))
   local weatherString10 = string.format("Wind 10,000ft MSL: Wind from%d@%.1fkts",currentWindDirection10, UTILS.MpsToKnots(currentWindStrength10))
-  MESSAGE:New(weatherString, 30, MESSAGE.Type.Information):ToGroup(_group)
-  MESSAGE:New(weatherString2a, 30, MESSAGE.Type.Information):ToGroup(_group)
-  MESSAGE:New(weatherString1, 30, MESSAGE.Type.Information):ToGroup(_group)
-  MESSAGE:New(weatherString2, 30, MESSAGE.Type.Information):ToGroup(_group)
-  MESSAGE:New(weatherString5, 30, MESSAGE.Type.Information):ToGroup(_group)
-  MESSAGE:New(weatherString10, 30, MESSAGE.Type.Information):ToGroup(_group)
+  self:msg(weatherString, _group, 30, MESSAGE.Type.Information)
+  self:msg(weatherString2a,_group, 30, MESSAGE.Type.Information)
+  self:msg(weatherString1, _group, 30, MESSAGE.Type.Information)
+  self:msg(weatherString2,_group, 30, MESSAGE.Type.Information)
+  self:msg(weatherString5, _group, 30, MESSAGE.Type.Information)
+  self:msg(weatherString10, _group, 30, MESSAGE.Type.Information)
   hm('Weather Requested \n ' .. weatherString .. '\n' .. weatherString1 .. '\n' .. weatherString2 .. '\n' .. weatherString5 .. '\n' .. weatherString10 .. '\n')
 end
 --- handle an admin attempt.
 function hevent:handleeadmin(text,_playername)
+  if _playername == nil then
+    _playername = "Player"
+  end
   local keywords=UTILS.Split(text, ",")
   local wrongpassword = false
   BASE:E({keywords=keywords})
@@ -744,6 +970,9 @@ function hevent:handleeadmin(text,_playername)
 end
 --- Silent version of the above.
 function hevent:rhandleeadmin(text,_group,_playername)
+  if _playername == nil then
+    _playername = "Player"
+  end
   local keywords=UTILS.Split(text, ",")
   BASE:E({keywords=keywords})
   for _,keyphrase in pairs(keywords) do
@@ -757,14 +986,17 @@ function hevent:rhandleeadmin(text,_group,_playername)
   end
   if ADMIN == true then
     BASE:E({"ADMIN ENABLED"})
-     MESSAGE:New(string.format("%s, Admin Commands are Now Enabled",_playername),15):ToGroup(_group)
+    self:msg(string.format("%s, Admin Commands are Now Enabled",_playername),_group,15)
   else
     BASE:E({"ADMIN DISABLED"})
-    MESSAGE:New(string.format("%s, Admin Commands are Now Disabled",_playername),15):ToGroup(_group)
+    self:msg(string.format("%s, Admin Commands are Now Disabled",_playername),_group,15)
   end
 end
 --- Handles spawnining in a existing template group from the mission.
-function newhandlespawn(text,coord,_group,_playername)
+function hevent:newhandlespawn(text,coord,_group,_playername)
+  if _playername == nil then
+    _playername = "player"
+  end
   BASE:E({"Spawn Request",text,coord,_playername})
   local keywords=UTILS.Split(text, ",")
   local unit = nil
