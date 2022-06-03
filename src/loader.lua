@@ -1,7 +1,7 @@
 -- Important Globals go here
 env.info("TGW Syria By Robert Graham Initialising.")
-_VERSION = 0.1
-_LASTUPDATE = "24/02/1011"
+_VERSION = 0.25
+_LASTUPDATE = "3/06/2022"
 _DEBUG = true
 _PASSWORD = "test"
 ADMINPASSWORD2 = "testing"
@@ -73,7 +73,7 @@ _loadfile("unitspawner.lua",_SRCPATH)
 _loadfile("farpcreator.lua",_SRCPATH)
 _loadfile("warehouse.lua",_SRCPATH)
 _loadfile("moosectld.lua",_SRCPATH)
-
+_loadfile("hound.lua",_SRCPATH)
 
 -- Temp stuff for testing on the Syria Misson -- 
 
@@ -93,4 +93,71 @@ myfarpcontrol:AddStartPoint(atco)
 myfarpcontrol:UseClosestPoint(true)
 myfarpcontrol:AddFarpsToPoints(true)
 myfarpcontrol:Start()
-  
+
+
+ACTIVEBLUEGROUPS = SET_GROUP:New():FilterActive():FilterCoalitions("blue"):FilterStart()
+ACTIVEREDGROUPS =  SET_GROUP:New():FilterActive():FilterCoalitions("red"):FilterStart()
+
+
+
+if initalstart == true then
+    -- ISIS Items
+    ADDTOWAREHOUSE("syrian platoon",30,whouse.ezor)
+    ADDTOWAREHOUSE("syrian manpad",10,whouse.ezor)
+    ADDTOWAREHOUSE("Mi8 transport",6,whouse.ezor,WAREHOUSE.Attribute.AIR_TRANSPORTHELO)
+    ADDTOWAREHOUSE("t55",9,whouse.ezor)
+    ADDTOWAREHOUSE("t72b",3,whouse.ezor)
+    ADDTOWAREHOUSE("zsu57",12,whouse.ezor)
+    ADDTOWAREHOUSE("hl zu23",12,whouse.ezor)
+    ADDTOWAREHOUSE("lc kord",24,whouse.ezor)
+    ADDTOWAREHOUSE("lc dshk",24,whouse.ezor)
+    ADDTOWAREHOUSE("btr80",12,whouse.ezor)
+    ADDTOWAREHOUSE("btr-rd",12,whouse.ezor)
+    ADDTOWAREHOUSE("plz-05",3,whouse.ezor)
+    ADDTOWAREHOUSE("hq7",6,whouse.ezor)
+    ADDTOWAREHOUSE("sa6",6,whouse.ezor)
+    ADDTOWAREHOUSE("sa19",4,whouse.ezor)
+    ADDTOWAREHOUSE("sa9",10,whouse.ezor)
+    ADDTOWAREHOUSE("shilka",10,whouse.ezor)
+    ADDTOWAREHOUSE("zsu57",14,whouse.ezor)
+    ADDTOWAREHOUSE("ural",30,whouse.ezor)
+
+
+    -- US Army Items
+    ADDTOWAREHOUSE("us platoon",10,whouse.tanf)
+    ADDTOWAREHOUSE("us manpad",10,whouse.tanf)
+    ADDTOWAREHOUSE("uh60a",1,whouse.tanf)
+    ADDTOWAREHOUSE("cobra",2,whouse.tanf)
+    ADDTOWAREHOUSE("warrior",2,whouse.tanf)
+    ADDTOWAREHOUSE("m2a2",4,whouse.tanf)
+    ADDTOWAREHOUSE("m1a2",2,whouse.tanf)
+    ADDTOWAREHOUSE("paladin",2,whouse.tanf)
+    ADDTOWAREHOUSE("paladin",3,whouse.h3)
+    ADDTOWAREHOUSE("us platoon",10,whouse.h3)
+    ADDTOWAREHOUSE("us manpad",10,whouse.h3)
+    ADDTOWAREHOUSE("uh60a",3,whouse.h3)
+    ADDTOWAREHOUSE("cobra",3,whouse.h3)
+    ADDTOWAREHOUSE("warrior",3,whouse.h3)
+    ADDTOWAREHOUSE("m2a2",8,whouse.h3)
+    ADDTOWAREHOUSE("m1a2",8,whouse.h3)
+    ADDTOWAREHOUSE("paladin",2,whouse.h3)
+    ADDTOWAREHOUSE("oh58d",2,whouse.h3)
+
+end
+
+
+Elint_blue = HoundElint:create(coalition.side.BLUE)
+Elint_blue:addPlatform("commtower1")
+Elint_blue:addPlatform("commtower2")
+Elint_blue:addPlatform("commtower3")
+Elint_blue:addPlatform("commtower4")
+Elint_blue:addPlatform("f16seed1")
+Elint_blue:addPlatform("f16seed2")
+Elint_blue:preBriefedContact("RS ewr55")
+Elint_blue:setMarkerType(HOUND.MARKER.POLYGON)
+Elint_blue:enableMarkers()
+Elint_blue:enableBDA()
+Elint_blue:systemOn()
+
+
+redctld:InjectVehicles(ZONE:New("sa10"),CTLD_CARGO:New(nil,"sa10",{"sa10"},CTLD_CARGO.Enum.FOB,true,true,24,nil,false,750,3,"SAM SYSTEMS"))

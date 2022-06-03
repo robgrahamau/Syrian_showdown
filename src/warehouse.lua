@@ -3,20 +3,36 @@ whcoord = {}
 
 
 whouse.ezor = WAREHOUSE:New(STATIC:FindByName("ezZor"), "Deir ez-Sor")
-whcoord["ezor"] = COORDINATE:New()
+whouse.ezor:SetAutoDefenceOn()
+whcoord["ezor"] = {}
+whcoord["ezor"].coord = COORDINATE:New()
+whcoord["ezor"].zone = ZONE:New("ezzor_packup")
 whouse.tanf = WAREHOUSE:New(STATIC:FindByName("tanf"), "Tanf")
-whcoord["tanf"] = COORDINATE:New()
+whouse.tanf:SetAutoDefenceOn()
+whcoord["tanf"] = {}
+whcoord["tanf"].coord = COORDINATE:New()
+whcoord["tanf"].zone = ZONE:New("tanf_packup")
 whouse.palmyra = WAREHOUSE:New(STATIC:FindByName("palmyra"),"Palmyra")
-whcoord["palmyra"] = COORDINATE:New()
+whouse.palmyra:SetAutoDefenceOn()
+whcoord["palmyra"] = {}
+whcoord["palmyra"].coord = COORDINATE:New()
+whcoord["palmyra"].zone = ZONE:New("palmyra_packup")
+whouse.h3 = WAREHOUSE:New(STATIC:FindByName("h3"),"H3")
+whouse.h3:SetAutoDefenceOn()
+whcoord["h3"] = {}
+whcoord["h3"].coord = COORDINATE:New()
+whcoord["h3"].zone = ZONE:New("h3_packup")
+
 
 whouse.ezor:Start()
 whouse.tanf:Start()
 whouse.palmyra:Start()
+whouse.h3:Start()
 
 function GETWAREHOUSE(_warehouse)
     local _wh = nil
     local _loc = nil
-    if _warehouse == "ezor" or _warehouse == "deir ez-zor" or _warehouse == "ez-zor" then
+    if _warehouse == "ezor" or _warehouse == "deir ez-zor" or _warehouse == "ez-zor" or _warehouse == "ezzor" or _warehouse == "deir ezzor" then
         _wh = whouse.ezor
         _loc = "ezor"
     elseif _warehouse == "tanf" or _warehouse == "at tanf" or _warehouse == "al tanf" then
@@ -25,6 +41,9 @@ function GETWAREHOUSE(_warehouse)
     elseif _warehouse == "palmyra" then
         _wh = whouse.palmyra
         _loc = "palmyra"
+    elseif _warehouse == "h3" then
+        _wh = whouse.h3
+        _loc = "h3"
     end
     rlog({_wh,_loc})
     return _wh, _loc
@@ -44,7 +63,7 @@ function whouse.ezor:OnAfterSelfRequest(From,Event,To,groupset,request)
     local assignmnet = whouse.ezor:GetAssignment(request)
     if assignmnet == "To Coordinate" then
         for _,_group in pairs(groupset:GetSet()) do
-            local _ToCoord = whcoord["ezor"]
+            local _ToCoord = whcoord["ezor"].coord
             _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
         end
     end    
@@ -55,7 +74,7 @@ function whouse.palmyra:OnAfterSelfRequest(From,Event,To,groupset,request)
     local assignmnet = whouse.palmyra:GetAssignment(request)
     if assignmnet == "To Coordinate" then
         for _,_group in pairs(groupset:GetSet()) do
-            local _ToCoord = whcoord["palmyra"]
+            local _ToCoord = whcoord["palmyra"].coord
             _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
         end
     end    
@@ -66,38 +85,17 @@ function whouse.tanf:OnAfterSelfRequest(From,Event,To,groupset,request)
     local assignmnet = whouse.tanf:GetAssignment(request)
     if assignmnet == "To Coordinate" then
         for _,_group in pairs(groupset:GetSet()) do
-            local _ToCoord = whcoord["tanf"]
+            local _ToCoord = whcoord["tanf"].coord
             _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
         end
     end    
 end
 
-if initalstart == true then
-    -- ISIS Items
-    ADDTOWAREHOUSE("syrian platoon",10,whouse.ezor)
-    ADDTOWAREHOUSE("syrian manpad",6,whouse.ezor)
-    ADDTOWAREHOUSE("Mi8 transport",6,whouse.ezor,WAREHOUSE.Attribute.AIR_TRANSPORTHELO)
-    ADDTOWAREHOUSE("t55",9,whouse.ezor)
-    ADDTOWAREHOUSE("t72b",3,whouse.ezor)
-    ADDTOWAREHOUSE("zsu57",12,whouse.ezor)
-    ADDTOWAREHOUSE("hl zu23",12,whouse.ezor)
-    ADDTOWAREHOUSE("lc kord",24,whouse.ezor)
-    ADDTOWAREHOUSE("lc dshk",24,whouse.ezor)
-    ADDTOWAREHOUSE("btr80",12,whouse.ezor)
-    ADDTOWAREHOUSE("btr-rd",12,whouse.ezor)
-
-
-    -- US Army Items
-    ADDTOWAREHOUSE("us platoon",10,whouse.tanf)
-
-end
-
-
 function MAPDEPLOYMENT(_asset,_specifictype,_amount,_warehouse,_loc,_coordinate)
     local _asset = _asset or nil
     local _specifictype = _specifictype or nil
     rlog({"MAPDEPLOYMENT",_asset,_specifictype,_amount,_warehouse,_loc})
-    whcoord[_loc] = _coordinate
+    whcoord[_loc].coord = _coordinate
     if _specifictype == nil then 
         _warehouse:AddRequest(_warehouse,WAREHOUSE.Descriptor.ATTRIBUTE,_asset,_amount,nil,nil,nil,"To Coordinate")
     else
@@ -200,4 +198,45 @@ function WAREHOUSETRANSFER(_group,_warehouse,_unittype,_specifictype,_amount,_to
     _dest, _loc = GETWAREHOUSE(_towarehouse)
 
     MAPTRANSFER(_unittype,_specifictype,_amount,_wh,_dest,_transporttype,_transportamount)
+end
+
+
+function WAREHOUSEPACKUP(_group,_warehouse,_col)
+    -- ook so we basically want to go through any in the warehouse zone and pack them up
+    -- so we need to check the coalition and the like make certain it can and yeah
+    -- first lets check that the coalition sending the command owns the warehouse.
+    local _wh,_loc = GETWAREHOUSE(_warehouse)
+    if _wh:GetCoalition() == _col then
+        local _zone = whcoord[_loc].zone
+        if _col == 1 then
+            MessageToRed(string.format("Now scanning %s warehouse zone for active units, any found will be stored this may take up to 1 minute",_warehouse),30)
+            ACTIVEREDGROUPS:ForeEachGroupAnyInZone(_zone,function(_group)  
+                if _group:AllOnGround() == true then
+                    _wh:__AddAsset(10,_group)
+                    SCHEDULER:New(nil,function() 
+                        MessageToRed(string.format("Group %s has been stored in warehouse %s",_group.GroupName,_warehouse))
+                        _group:Destroy()
+                    end,{},15)
+                end
+            end)
+        else
+            MessageToBlue(string.format("Now scanning %s warehouse zone for active units, any found will be stored this may take up to 1 minute",_warehouse),30)
+            ACTIVEBLUEGROUPS:ForeEachGroupAnyInZone(_zone,function(_group)  
+                if _group:AllOnGround() == true then
+                    _wh:__AddAsset(10,_group)
+                    SCHEDULER:New(nil,function() 
+                        MessageToBlue(string.format("Group %s has been stored in warehouse %s",_group.GroupName,_warehouse))
+                        _group:Destroy()
+                    end,{},15)
+                end
+            end)
+        end
+    end
+end
+
+
+function WAREHOUSESTOCKCHECK(_group,warehouse,_type,_col)
+    _wh,_loc = GETWAREHOUSE(_warehouse)
+
+
 end

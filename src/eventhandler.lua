@@ -223,8 +223,29 @@ function hevent:OnEventMarkRemoved(EventData)
       self:warehousetransfer(text,text2,_playername,_group,_coalition)
     elseif EventData.text:lower():find("-assets") then
       self:warehousecheck(text,text2,_playername,_group,_coalition)
+    elseif EventData.text:lower():find("-storeasset") then
+      self:warehousestore(_text,_text2,_group,_col)
     end
   end
+end
+---store in warehouse
+-- -storeasset,w=name
+function hevent:warehousestore(_text,_text2,_group,_col)
+  local keywords = UTILS.Split(_text2,",")
+  local _warehouse = nil
+  for _,keyprhase in pairs(keywords) do
+    local str = UTILS.Split(keyprhase,"=")
+    local key=str[1]
+    local val=str[2]
+    if key:lower() == "w" or key:lower() == "warehouse" then
+      _warehouse = val:lower()
+    end
+  end
+  if _warehouse == nil then
+    self:msg("Unable to store assets as you didn't include a warehouse",_group,30)
+    return
+  end
+  WAREHOUSEPACKUP(_group,_warehouse,_col)
 end
 
 --- warehouse check
