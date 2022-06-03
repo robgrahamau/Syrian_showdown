@@ -1,7 +1,7 @@
 -- Important Globals go here
 env.info("TGW Syria By Robert Graham Initialising.")
-_VERSION = 0.25
-_LASTUPDATE = "3/06/2022"
+_VERSION = 0.26
+_LASTUPDATE = "4/06/2022"
 _DEBUG = true
 _PASSWORD = "test"
 ADMINPASSWORD2 = "testing"
@@ -17,8 +17,16 @@ TANKERTIMER = 0
 TANKER_COOLDOWN = (1)*60
 BLUEUNITLIMIT = 500
 REDUNITLIMIT = 500
+NOWTABLE = {}
+NOWYEAR = nil
+NOWMONTH = nil
+NOWDAY = nil
+NOWHOUR = nil
+NOWMINUTE = nil
+NOWSEC = nil
 
-
+---Stand Alone version of BASE to use as my own logged.
+---@param Arguments any
 function rlog( Arguments )
     if _DEBUG then
         local DebugInfoCurrent = debug.getinfo( 2, "nl" )
@@ -40,6 +48,22 @@ function rlog( Arguments )
     end
 end
 
+
+if os ~= nil then
+    NOWTABLE = os.date('*t')
+    NOWYEAR = NOWTABLE.year
+    NOWMONTH = NOWTABLE.month
+    NOWDAY = NOWTABLE.day
+    NOWHOUR = NOWTABLE.hour
+    NOWMINUTE = NOWTABLE.min
+    NOWSEC = NOWTABLE.sec
+    NOWTIME = os.time()
+else
+    rlog("WARNING, OS IS SANATIZED AND WE ARE UNABLE TO GET THAT INFORMATION. SOME THINGS MAY NOT FUNCTION CORRECTLY.")
+end
+
+---Hypeman Msg Handler
+---@param msg string
 function hm(msg)
     if __HMLOADED then
         HypeMan.sendBotMessage(msg)
@@ -47,6 +71,9 @@ function hm(msg)
         env.info(string.format("Hypeman not loaded: %s",msg))
     end
 end
+
+---Hypeman LSO Msg Handler
+---@param msg string
 function hmlso(msg)
 	if _HMLOADED then
         HypeMan.sendLSOBotMessage(msg)
@@ -54,6 +81,10 @@ function hmlso(msg)
         env.info(string.format("Hypemand not loaded - LSOMSG: %s",msg))
     end
 end
+
+---File Loader with error handling.
+---@param filename string
+---@param path string
 function _loadfile(filename,path)
     rlog({"Attempting to load file",filename,path})    
     local ran, errorMSG = pcall(function() dofile(lfs.writedir() ..path .. filename) end)
@@ -74,7 +105,8 @@ _loadfile("farpcreator.lua",_SRCPATH)
 _loadfile("warehouse.lua",_SRCPATH)
 _loadfile("moosectld.lua",_SRCPATH)
 _loadfile("hound.lua",_SRCPATH)
-
+_loadfile("dcslink.lua",_SRCPATH)
+_loadfile("factory.lua",_SRCPATH)
 -- Temp stuff for testing on the Syria Misson -- 
 
 
@@ -160,4 +192,19 @@ Elint_blue:enableBDA()
 Elint_blue:systemOn()
 
 
-redctld:InjectVehicles(ZONE:New("sa10"),CTLD_CARGO:New(nil,"sa10",{"sa10"},CTLD_CARGO.Enum.FOB,true,true,24,nil,false,750,3,"SAM SYSTEMS"))
+redctld:InjectVehicles(ZONE:New("sa10"),CTLD_CARGO:New(nil,"SA10",{"sa10"},CTLD_CARGO.Enum.FOB,true,true,24,nil,false,750,3,"SAM SYSTEMS"))
+co = coroutine.create(function ()
+    env.info("This run in a coroutine")
+  end)
+  coroutine.resume(co)
+
+ezorfactory = RGFactory:New("Ez-Zor Factory","hl zu23",1,(60*60*24*3.5),(60*60*24*4),true,1)
+ezorfactory:AddParts(197492779,"hanger")
+ezorfactory:AddParts(118065130,"hanger")
+ezorfactory:AddParts(197492772,"industrial")
+ezorfactory:AddParts(197492805,"industrial")
+ezorfactory:AddParts(118065223,"hanger")
+
+ezorfactory:AddWarehouse(whouse.ezor)
+ezorfactory:enableMarkers(true)
+ezorfactory:Start()

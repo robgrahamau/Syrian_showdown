@@ -29,9 +29,9 @@ bluectld:AddCratesCargo("Hawk",{"hawk"},CTLD_CARGO.Enum.FOB,16,750,34,"SAM SYSTE
 bluectld:AddCratesCargo("NASAM",{"nasam"},CTLD_CARGO.Enum.FOB,8,750,26,"SAM SYSTEMS")
 bluectld:AddCratesCargo("Service Vehicles",{"servicevehicletemplate"},CTLD_CARGO.Enum.VEHICLE,18,500,4,"Command & Control")
 bluectld:AddCratesCargo("FPS117",{"fps117"},CTLD_CARGO.Enum.FOB,12,600,12,"Command & Control")
-bluectld:AddCratesRepair("Patriot Repair","patriot",CTLD_CARGO.Enum.REPAIR,5,500,30,"Repair")
-bluectld:AddCratesRepair("Hawk Repair","hawk",CTLD_CARGO.Enum.REPAIR,3,500,30,"Repair")
-bluectld:AddCratesRepair("NASAM Repair","nasam",CTLD_CARGO.Enum.REPAIR,2,500,30,"Repair")
+bluectld:AddCratesRepair("Patriot Repair","patriot",CTLD_CARGO.Enum.REPAIR,8,500,30,"Repair")
+bluectld:AddCratesRepair("Hawk Repair","hawk",CTLD_CARGO.Enum.REPAIR,6,500,30,"Repair")
+bluectld:AddCratesRepair("NASAM Repair","nasam",CTLD_CARGO.Enum.REPAIR,3,500,30,"Repair")
 
 bluectld:AddCTLDZone("tanf",CTLD.CargoZoneType.LOAD,SMOKECOLOR.Blue,true,false)
 bluectld:AddCTLDZone("h3",CTLD.CargoZoneType.LOAD,SMOKECOLOR.Blue,true,false)
@@ -40,7 +40,7 @@ bluectld:AddCTLDZone("ezor",CTLD.CargoZoneType.LOAD,SMOKECOLOR.Blue,false,false)
 
 
 
-redctld = CTLD:New(coalition.side.RED,{"Epsilon","epsilon","EPSILON"},"Syrian Transport")
+redctld = CTLD:New(coalition.side.RED,{"Epsilon","epsilon","EPSILON"},"Syrian Transport Command")
 redctld.useprefix = false
 redctld.CrateDistance = 100
 redctld.dropcratesanywhere = true
@@ -69,10 +69,10 @@ redctld:AddCratesCargo("SA10",{"sa10"},CTLD_CARGO.Enum.FOB,24,750,52,"SAM SYSTEM
 redctld:AddCratesCargo("SA3",{"sa3"},CTLD_CARGO.Enum.FOB,18,750,40,"SAM SYSTEMS")
 redctld:AddCratesCargo("SA2",{"sa2"},CTLD_CARGO.Enum.FOB,18,750,40,"SAM SYSTEMS")
 redctld:AddCratesCargo("Service Vehicles",{"servicevehicletemplate"},CTLD_CARGO.Enum.VEHICLE,18,500,4,"Command & Control")
-redctld:AddCratesRepair("SA5 Repair","sa5",CTLD_CARGO.Enum.REPAIR,5,500,30,"Repair")
-redctld:AddCratesRepair("SA10 Repair","sa10",CTLD_CARGO.Enum.REPAIR,3,500,30,"Repair")
-redctld:AddCratesRepair("SA3 Repair","sa3",CTLD_CARGO.Enum.REPAIR,2,500,30,"Repair")
-redctld:AddCratesRepair("SA2 Repair","sa2",CTLD_CARGO.Enum.REPAIR,2,500,30,"Repair")
+redctld:AddCratesRepair("SA5 Repair","sa5",CTLD_CARGO.Enum.REPAIR,10,500,30,"Repair")
+redctld:AddCratesRepair("SA10 Repair","sa10",CTLD_CARGO.Enum.REPAIR,8,500,30,"Repair")
+redctld:AddCratesRepair("SA3 Repair","sa3",CTLD_CARGO.Enum.REPAIR,6,500,30,"Repair")
+redctld:AddCratesRepair("SA2 Repair","sa2",CTLD_CARGO.Enum.REPAIR,6,500,30,"Repair")
 
 redctld:AddCTLDZone("tanf",CTLD.CargoZoneType.LOAD,SMOKECOLOR.Blue,false,false)
 redctld:AddCTLDZone("palmyra",CTLD.CargoZoneType.LOAD,SMOKECOLOR.Blue,true,false)

@@ -18,6 +18,13 @@ hevent = {
     neutralcountry = country.id.UN_PEACEKEEPERS,
 }
 
+---creates a new handler events.
+---@param _markers boolean - Do we handle marker events
+---@param _lqm boolean - do we handle landing qualify mark events
+---@param _death boolean - do we handle death events
+---@param _tankertime int - tanker marker time
+---@param _tankercooldown int - how long between tanker marks we can go.
+---@return table|nil
 function hevent:New(_markers,_lqm,_death,_tankertime,_tankercooldown)
     local self = BASE:Inherit(self,BASE:New())
     self:E("Initalising Handle Events")
@@ -43,24 +50,29 @@ function hevent:msg(_msg,_group,_duration,_infotype,_clear)
 end
 
 --- Sets the Blue Spawn Prefix
+---@param bp string - Blue Prefix.
 function hevent:setblueprefix(bp)
   if bp ~= nil then
     self.blueprefix = bp
   end
 end
 --- Sets the Red Spawn Prefix
+---@param rp string - red prefix.
 function hevent:setredprefix(rp)
   if rp ~= nil then
     self.redprefix = rp
   end
 end
+
 --- Sets the Neutral Spawn Prefix
+---@param up string - neutral prfix.
 function hevent:setunprefix(up)
   if up ~= nil then
     self.neutralprefix = up
   end
 end
 
+---Start handler.
 function hevent:Start()
   self:E({"Starting Handle_Events"})  
   if self._handlemarkers ~= false then
@@ -71,13 +83,16 @@ function hevent:Start()
   end
 end
 
+---Stop Handler
 function hevent:Stop()
   self:E({"Stopping Handle_Events"})  
   self:UnhandleEvent(EVENTS.MarkRemoved)
   self:UnhandleEvent(EVENTS.LandingQualityMark)
 
 end
--- handles the Landing Quality Mark Event
+
+---Landing Quality Mark Handler
+---@param EventData EventData
 function hevent:OnEventLandingQualityMark(EventData)
     self:E({"Landing Quality Mark",EventData})
     local comment = EventData.comment
@@ -99,7 +114,9 @@ function hevent:OnEventLandingQualityMark(EventData)
     hm("**Super Carrier LSO** \n> ** " .. where .. "** \n> **Landing Grade for  " .. who .. " **Aircraft Type:** " .. t .. " \n> **Grade:** " .. comment .. "." )
     hmlso( "**Super Carrier LSO** \n> ** " .. where .. "** \n> **Landing Grade for  " .. who .. " **Aircraft Type:** " .. t .. " \n> **Grade:** " .. comment .. "."  )
 end
---- Handles our OnEventMarkRemove
+
+--- Handles our OnEventMarkRemoved Events, This is our MAIN handler and has a lot of commands.
+---@param EventData EventData
 function hevent:OnEventMarkRemoved(EventData)
   if EventData.text~=nil and EventData.text:lower():find("-") then
     local dcsgroupname = EventData.IniDCSGroupName
@@ -228,8 +245,11 @@ function hevent:OnEventMarkRemoved(EventData)
     end
   end
 end
----store in warehouse
--- -storeasset,w=name
+---store in warehouse -storeasset,w=name or -storeassets,warehouse=name
+---@param _text string
+---@param _text2 string
+---@param _group GROUP
+---@param _col int
 function hevent:warehousestore(_text,_text2,_group,_col)
   local keywords = UTILS.Split(_text2,",")
   local _warehouse = nil
@@ -251,6 +271,12 @@ end
 --- warehouse check
 -- -assets,w="name",a="ifv"
 -- -assets,warehouse="name",type="name"
+---comment
+---@param _text string
+---@param _text2 string
+---@param _group GROUP
+---@param _col int
+---@return boolean
 function hevent:warehousecheck(_text,_text2,_group,_col)
   local keywords = UTILS.Split(_text2,",")
   local _warehouse = nil
@@ -268,9 +294,8 @@ function hevent:warehousecheck(_text,_text2,_group,_col)
     if key:lower() == "w" or key:lower() == "warehouse" then
       _warehouse = val:lower()
     end
-
     if key:lower() == "attrib" or key:lower() == "a" then
-      if val:lower() == "armor" then
+      if val:lower() == "armor" or val:lower() == "armour" or val:lower() == "tank" or val:lower() == "tanks" then
         _unittype = WAREHOUSE.Attribute.GROUND_TANK
       elseif val:lower() == "apc" or val:lower() == "ifv" then 
         _unittype = WAREHOUSE.Attribute.GROUND_APC
@@ -278,7 +303,7 @@ function hevent:warehousecheck(_text,_text2,_group,_col)
         _unittype = WAREHOUSE.Attribute.GROUND_INFANTRY
       elseif val:lower() == "aaa" then
         _unittype = WAREHOUSE.Attribute.GROUND_AAA
-      elseif val:lower() == "art" then
+      elseif val:lower() == "art" or val:lower() == "artillary"then
         _unittype = WAREHOUSE.Attribute.GROUND_ARTILLERY
       elseif val:lower() == "sam" then
         _unittype = WAREHOUSE.Attribute.GROUND_SAM
@@ -308,6 +333,12 @@ end
 --- handles our warehouse transfer requests
 -- -transfer,from="warehouse",to="warehouse",attrib="type",amount=#,transport="type",tcount=#
 -- -transfer,from="warehouse",dest="warehouse",type="name",n=#,tt="type",tn=#
+---@param _text string
+---@param _text2 string
+---@param _playername string
+---@param _group GROUP
+---@param _col int
+---@return boolean
 function hevent:warehousetransfer(_text,_text2,_playername,_group,_col)
   local keywords = UTILS.Split(_text2,",")
   local _warehouse = nil
@@ -330,9 +361,8 @@ function hevent:warehousetransfer(_text,_text2,_playername,_group,_col)
     if key:lower() == "dest" or key:lower() == "to" then
       _towarehouse = val:lower()
     end
-    
-    if key:lower() == "attrib" then
-      if val:lower() == "armor" then
+    if key:lower() == "attrib" or key:lower() == "a" then
+      if val:lower() == "armor" or val:lower() == "armour" or val:lower() == "tank" or val:lower() == "tanks" then
         _unittype = WAREHOUSE.Attribute.GROUND_TANK
       elseif val:lower() == "apc" or val:lower() == "ifv" then 
         _unittype = WAREHOUSE.Attribute.GROUND_APC
@@ -340,7 +370,7 @@ function hevent:warehousetransfer(_text,_text2,_playername,_group,_col)
         _unittype = WAREHOUSE.Attribute.GROUND_INFANTRY
       elseif val:lower() == "aaa" then
         _unittype = WAREHOUSE.Attribute.GROUND_AAA
-      elseif val:lower() == "art" then
+      elseif val:lower() == "art" or val:lower() == "artillary"then
         _unittype = WAREHOUSE.Attribute.GROUND_ARTILLERY
       elseif val:lower() == "sam" then
         _unittype = WAREHOUSE.Attribute.GROUND_SAM
@@ -404,6 +434,13 @@ end
 -- -deploy,w="warehouse",a="type",n=#
 -- -deploy,from="warehouse",attrib="type",amount=#
 -- -deploy,from="warehouse",type="type",amount=#
+---@param _text string
+---@param _text2 string
+---@param _coord COORDINATE
+---@param _playername string
+---@param _group GROUP
+---@param _col int
+---@return boolean
 function hevent:warehousedeploy(_text,_text2,_coord,_playername,_group,_col)
   local keywords = UTILS.Split(_text2,",")
   local _warehouse = nil
@@ -476,10 +513,12 @@ function hevent:warehousedeploy(_text,_text2,_coord,_playername,_group,_col)
 end
 
 --- handles our help requests.
+---@param _group GROUP
 function hevent:handlehelp(_group)
   local msgtext = "Map Command Help Requested. The Following are valid commands for markers any with a - at the start require you to delete the marker. \n -help (this command) \n -smoke,red or -smoke,green or -smoke,blue or -smoke,white (Spawn a random smoke near the location) \n -flare (fire flares from the location of the nearest friendly forces) \n -weather (request a GRIBS weather report from the location of the marker) \n%d"
   local _msg = self:msg(msgtext,_group,60)
 end
+
 --- checks current group and unit count for all coalitions.
 function hevent:groupchecker()
   local tempset = SET_UNIT:New():FilterActive():FilterOnce()
@@ -517,6 +556,11 @@ function hevent:groupchecker()
   MESSAGE:New(String.format("Current Group Count is: %d Active Groups, \n • Blue Groups: %d , Red Groups: %d , Neutral Groups: %d \n Unit Count is: %d Units \n • Blue Units: %d , Red Units: %d , Neutral Units: %d ",gcounter,gb,gr,gn,ucounter,ub,ur,un),30):ToAll()
 end
 
+---random spawn command
+---@param _text string
+---@param _coord COORDINATE
+---@param _playername string
+---@param _group GROUP
 function hevent:randomspawn(_text,_coord,_playername,_group)
   if _playername == nil then
     _playername = "Player"
@@ -581,7 +625,13 @@ function hevent:randomspawn(_text,_coord,_playername,_group)
   self:E({"Unitspawner",_type,_groupsize,_spread,_mark})
   UNITSPAWNER:createredfor(_coord,_type,_groupSize,_spread,_mark,_inf)
 end
+
 --- Handles our smoke marker rounds..
+---@param text string
+---@param _coord COORDINATE
+---@param col int
+---@param _group GROUP
+---@param _playername string
 function hevent:handleSmoke(text,_coord,col,_group,_playername)
   if _playername == nil then
     _playername = "Player"
@@ -717,10 +767,14 @@ function hevent:handleSmoke(text,_coord,col,_group,_playername)
     end
   end
 end
+
 --- Handles a script input requires Admin to be true + an extra password.
 -- enters by 
 -- '-runscript;somerandompassword;if JEFFSSUCK == true then socksjeff:Destroy();'
 -- really shoulnd't be used.
+---@param text string
+---@param _playername string
+---@param _group GROUP
 function hevent:handleScript(text,_playername,_group)
   if _playername == nil then
     _playername = "Player"
@@ -767,6 +821,8 @@ function hevent:handleExplosion(text,coord,_playername,_playergroup)
 end
 
 --- handles tanker cooldown help requests
+---@param tankername string
+---@param _col int
 function hevent:tankerCooldownHelp(tankername,_col)
     local msg = MESSAGE:New(string.format("Tanker routing is now available again for %s. Use the following marker commands:\n-tanker route %s \n-tanker route %s ,h <0-360>,d <5-100>,a <10-30,000>,s <250-400> \nFor more control",tankername,tankername,tankername), 30, MESSAGE.Type.Information)
     if _col == 1 then
@@ -784,6 +840,12 @@ end
 -- h = heading in degress
 -- d = distance in nm
 -- s = speed in TAS.
+---@param text string marker text
+---@param coord COORDINATE moose coordinate
+---@param _col int 0 = neutral, 1 = red, 2 = blue
+---@param _playername string players name
+---@param _group GROUP MOOSE GROUP.
+---@return boolean
 function hevent:handleTankerRequest(text,coord,_col,_playername,_group)
   if _playername == nil then
     _playername = "Player"
@@ -922,11 +984,12 @@ function hevent:handleTankerRequest(text,coord,_col,_playername,_group)
     SCHEDULER:New(nil, function() self:tankerCooldownHelp(tankergroupname,_col) end, {}, TANKER_COOLDOWN)
   end
 end
--- Handle red tanker requests (we need to merge this with the above at some point.)
-function hevent:handleRedTankerRequest(text,coord,_playername,_group)
-  self:msg("Red Coalition Tanker Routing Commands are Currently Not Supported",_group,30)
-end
- -- runs a mass delete command.
+
+---Handles Mass Deletion
+---@param _coord COORDINATE dcs coordinate
+---@param dist int meters
+---@param _coalition int coalition 1 = red, 2 = blue, 0 = neutral.
+---@param _playername string player who initated the marker.
 function hevent:massdel(_coord,dist,_coalition,_playername)
   if _playername == nil then
     _playername = "Player"
@@ -961,6 +1024,9 @@ end
 --- works out the massdel command
 -- command entry is '-massdel,d=1000,s=red'
 -- if s is blank then it defaults to removing both.
+---@param text string marker text
+---@param coord COORDINATE moose coordinate
+---@param _playername string event init playername.
 function hevent:deletemassgroup(text,coord,_playername)
   local keywords=UTILS.Split(text,",")
   local dist = 25000
@@ -979,6 +1045,9 @@ function hevent:deletemassgroup(text,coord,_playername)
   self:massdel(coord,dist,col,_playername)
 end
 --- Handle a weather request.
+---@param text string marker text
+---@param coord COORDINATE moose coodinate
+---@param _group GROUP moose Group
 function hevent:handleWeatherRequest(text, coord, _group)
   local weather=env.mission.weather
   local visibility = weather.visibility.distance
@@ -1012,7 +1081,10 @@ function hevent:handleWeatherRequest(text, coord, _group)
   self:msg(weatherString10, _group, 30, MESSAGE.Type.Information)
   hm('Weather Requested \n ' .. weatherString .. '\n' .. weatherString1 .. '\n' .. weatherString2 .. '\n' .. weatherString5 .. '\n' .. weatherString10 .. '\n')
 end
+
 --- handle an admin attempt.
+---@param text string
+---@param _playername string
 function hevent:handleeadmin(text,_playername)
   if _playername == nil then
     _playername = "Player"
@@ -1045,7 +1117,11 @@ function hevent:handleeadmin(text,_playername)
     end
   end
 end
---- Silent version of the above.
+
+--- Silent version of the above
+---@param text string
+---@param _group GROUP
+---@param _playername string
 function hevent:rhandleeadmin(text,_group,_playername)
   if _playername == nil then
     _playername = "Player"
@@ -1152,7 +1228,12 @@ function hevent:newhandlespawn(text,coord,_group,_playername)
     MESSAGE:New("unable to spawn requested group as you left out information",15):ToAll()
   end
 end
---- Routes Mass Group.
+
+--- Routes Mass Group based on distance from the marker.
+---@param text string
+---@param coord COORDINATE
+---@param _playername string
+---@param _group GROUP
 function hevent:routemassgroup(text,coord,_playername,_group)
   local keywords=UTILS.Split(text,",")
   local dist = 25000
@@ -1170,7 +1251,9 @@ function hevent:routemassgroup(text,coord,_playername,_group)
   end
   self:routegroups(coord,dist,col,_playername)
 end
---- handle spawns.
+
+---Handles a Despawn request.
+---@param text string
 function hevent:handledespawn(text)
   BASE:E({"DeSpawn Request",text})
   local keywords=UTILS.Split(text, ",")
@@ -1190,7 +1273,9 @@ function hevent:handledespawn(text)
     MESSAGE:New("And with a finger snap " .. unit .. " has become dust in the wind",10):ToAll()
   end
 end
---- Message to all
+
+---send a Message to all
+---@param text string
 function hevent:msgtoall(text)
   BASE:E({"Msg to all",text})
   local keywords=UTILS.Split(text,"|")

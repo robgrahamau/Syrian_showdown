@@ -1,5 +1,14 @@
 RGUTILS = {}
-
+function RGUTILS.getTimefromseconds(time)
+  local days = math.floor(time/86400)
+  local remaining = time % 86400
+  local hours = math.floor(remaining/3600)
+  remaining = remaining % 3600
+  local minutes = math.floor(remaining/60)
+  remaining = remaining % 60
+  local seconds = math.floor(remaining)
+  return string.format("%d:%02d:%02d:%02d",days,hours,minutes,seconds)
+end
 -- porting in Slmod's serialize_slmod2
 RGUTILS.oneLineSerialize = function( tbl ) -- serialization of a table all on a single line, no comments, made to replace old get_table_string function
 

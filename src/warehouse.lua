@@ -29,6 +29,10 @@ whouse.tanf:Start()
 whouse.palmyra:Start()
 whouse.h3:Start()
 
+---Return warehouse information
+---@param _warehouse string warehouse name
+---@return unknown
+---@return string
 function GETWAREHOUSE(_warehouse)
     local _wh = nil
     local _loc = nil
@@ -49,26 +53,58 @@ function GETWAREHOUSE(_warehouse)
     return _wh, _loc
 end
 
-function ADDTOWAREHOUSE(_asset,_amount,_warehouse,_attribute,_cargohold,_weight,_load,_skill)
+---Add items to a warehouse
+---@param _asset string DCS GROUP NAME
+---@param _amount int
+---@param _warehouse WAREHOUSE
+---@param _attribute WAREHOUSE.ATTRIBUTE
+---@param _cargohold int cargo hold size in kg
+---@param _weight int unit weight overright
+---@param _loadradius int loadradius of the unit
+---@param _skill AI.Skill ai skill
+---@param _liveries table 
+---@param _assignment string
+function ADDTOWAREHOUSE(_asset,_amount,_warehouse,_attribute,_cargohold,_weight,_load,_skill,_liveries,_assignment)
     _attribute = _attribute or nil
     _cargohold = _cargohold or nil
     _weight = _weight or nil
     _load = _load or nil
     _skill = _skill or nil
-    _warehouse:AddAsset(_asset,_amount,_attribute,_cargohold,_weight,_load,_skill)
+    _liveries = _liveries or nil
+    _assignment = _assignment or nil
+
+    _warehouse:AddAsset(_asset,_amount,_attribute,_cargohold,_weight,_load,_skill,_liveries,_assignment)
 end
 
+---OnAfterSelfRequest
+---@param From any
+---@param Event Event
+---@param To any
+---@param groupset SET_GROUP
+---@param request string
 function whouse.ezor:OnAfterSelfRequest(From,Event,To,groupset,request)
     -- lets grab our request
     local assignmnet = whouse.ezor:GetAssignment(request)
+    local stimer = 1
     if assignmnet == "To Coordinate" then
         for _,_group in pairs(groupset:GetSet()) do
+            
+            SCHEDULER:New(nil,function() 
             local _ToCoord = whcoord["ezor"].coord
-            _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
+
+            _group:RouteGroundOnRoad(_ToCoord:GetRandomCoordinateInRadius((200+(stimer/4)), (stimer/4)), _group:GetSpeedMax()*0.8)
+            end,{},stimer)
+            stimer = stimer + 20
         end
     end    
 end
 
+---OnAfterSelfRequest
+---@param From any
+---@param Event Event
+---@param To any
+---@param groupset SET_GROUP
+---@param request string
 function whouse.palmyra:OnAfterSelfRequest(From,Event,To,groupset,request)
     -- lets grab our request
     local assignmnet = whouse.palmyra:GetAssignment(request)
@@ -80,6 +116,12 @@ function whouse.palmyra:OnAfterSelfRequest(From,Event,To,groupset,request)
     end    
 end
 
+---OnAfterSelfRequest
+---@param From any
+---@param Event Event
+---@param To any
+---@param groupset SET_GROUP
+---@param request string
 function whouse.tanf:OnAfterSelfRequest(From,Event,To,groupset,request)
     -- lets grab our request
     local assignmnet = whouse.tanf:GetAssignment(request)
@@ -91,6 +133,13 @@ function whouse.tanf:OnAfterSelfRequest(From,Event,To,groupset,request)
     end    
 end
 
+---Sends a warehouse request to the system
+---@param _asset WAREHOUSE.Attribute
+---@param _specifictype string DCS GROUP NAME
+---@param _amount int
+---@param _warehouse WAREHOUSE
+---@param _loc string WAREHOUSE name for loc for storing the _coordinate.
+---@param _coordinate COORDINATE move to coord.
 function MAPDEPLOYMENT(_asset,_specifictype,_amount,_warehouse,_loc,_coordinate)
     local _asset = _asset or nil
     local _specifictype = _specifictype or nil
@@ -103,6 +152,14 @@ function MAPDEPLOYMENT(_asset,_specifictype,_amount,_warehouse,_loc,_coordinate)
     end
 end
 
+---Transfers from one warehouse to another
+---@param _asset WAREHOUSE.Attribute
+---@param _specifictype string DCS GROUP NAME
+---@param _amount int
+---@param _warehouse WAREHOUSE
+---@param _destination WAREHOUSE
+---@param _transporttype WAREHOUSE.TransportType
+---@param _transportamount int
 function MAPTRANSFER(_asset,_specifictype,_amount,_warehouse,_destination,_transporttype,_transportamount)
     local _asset = _asset or nil
     local _specifictype = _specifictype or nil
@@ -116,7 +173,12 @@ function MAPTRANSFER(_asset,_specifictype,_amount,_warehouse,_destination,_trans
     end
 
 end
-
+---comment
+---@param _group GROUP
+---@param _warehouse string warehouse name
+---@param _unittype string DCS GROUP Name
+---@param _specifictype WAREHOUSE.Attribute
+---@param _col int 0 = neutral, 1 = red, 2 = blue
 function WAREHOUSEAMOUNTS(_group,_warehouse,_unittype,_specifictype,_col)
     local _wh = nil
     local _loc = nil
@@ -137,6 +199,16 @@ function WAREHOUSEAMOUNTS(_group,_warehouse,_unittype,_specifictype,_col)
     end
 end
 
+---Main Handler for warehouse movement
+---@param _group GROUP
+---@param _warehouse string Warehouse name
+---@param _unittype dcs group type
+---@param _specifictype WAREHOUSE.Attribute
+---@param _amount int
+---@param _requesttype string currently only takes route
+---@param _coordinate COORDINATE
+---@param _col int 0 = neutral, 1 = red, 2 = blue
+---@return boolean
 function WAREHOUSEHANDLER(_group,_warehouse,_unittype,_specifictype,_amount,_requesttype,_coordinate,_col)
     rlog({"WAREHOUSEHANDLER:",_group,_warehouse,_unittype,_specifictype,_amount,_requesttype,_towarehouse,_col})
     local checker = RGUTILS.groupchecker()
@@ -167,9 +239,20 @@ function WAREHOUSEHANDLER(_group,_warehouse,_unittype,_specifictype,_amount,_req
         end
         MAPDEPLOYMENT(_unittype,_specifictype,_amount,_wh,_loc,_coordinate)
     end
+    return true
 end
 
-
+---Handles the marker side of the transfer
+---@param _group GROUP
+---@param _warehouse string
+---@param _unittype string dcs group name
+---@param _specifictype WAREHOUSE.Attribute
+---@param _amount int
+---@param _towarehouse string
+---@param _transporttype WAREHOUSE.TransportType
+---@param _transportamount int 
+---@param _col int 0 = neutral, 1 = red, 2 = blue
+---@return boolean
 function WAREHOUSETRANSFER(_group,_warehouse,_unittype,_specifictype,_amount,_towarehouse,_transporttype,_transportamount,_col)
     rlog({"WAREHOUSEHANDLER:",_group,_warehouse,_unittype,_specifictype,_amount,_requesttype,_towarehouse,_col})
     local checker = RGUTILS.groupchecker()
@@ -198,9 +281,13 @@ function WAREHOUSETRANSFER(_group,_warehouse,_unittype,_specifictype,_amount,_to
     _dest, _loc = GETWAREHOUSE(_towarehouse)
 
     MAPTRANSFER(_unittype,_specifictype,_amount,_wh,_dest,_transporttype,_transportamount)
+    return true
 end
 
-
+---Packup objects if they are in the right zone.
+---@param _group GROUP
+---@param _warehouse string warehouse name
+---@param _col int 0 = neutral, 1 = red, 2 = blue
 function WAREHOUSEPACKUP(_group,_warehouse,_col)
     -- ook so we basically want to go through any in the warehouse zone and pack them up
     -- so we need to check the coalition and the like make certain it can and yeah
@@ -234,7 +321,11 @@ function WAREHOUSEPACKUP(_group,_warehouse,_col)
     end
 end
 
-
+---Eventually handle stock checking.
+---@param _group GROUP
+---@param warehouse string
+---@param _type string dcs group name
+---@param _col int 0 = neutral, 1 = red, 2 = blue
 function WAREHOUSESTOCKCHECK(_group,warehouse,_type,_col)
     _wh,_loc = GETWAREHOUSE(_warehouse)
 
