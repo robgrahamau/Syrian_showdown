@@ -293,11 +293,12 @@ function WAREHOUSEPACKUP(_group,_warehouse,_col)
     -- so we need to check the coalition and the like make certain it can and yeah
     -- first lets check that the coalition sending the command owns the warehouse.
     local _wh,_loc = GETWAREHOUSE(_warehouse)
+    BASE:E({_col,_warehouse})
     if _wh:GetCoalition() == _col then
         local _zone = whcoord[_loc].zone
         if _col == 1 then
             MessageToRed(string.format("Now scanning %s warehouse zone for active units, any found will be stored this may take up to 1 minute",_warehouse),30)
-            ACTIVEREDGROUPS:ForeEachGroupAnyInZone(_zone,function(_group)  
+            ACTIVEREDGROUPS:ForEachGroupAnyInZone(_zone,function(_group)  
                 if _group:AllOnGround() == true then
                     _wh:__AddAsset(10,_group)
                     SCHEDULER:New(nil,function() 
@@ -308,7 +309,7 @@ function WAREHOUSEPACKUP(_group,_warehouse,_col)
             end)
         else
             MessageToBlue(string.format("Now scanning %s warehouse zone for active units, any found will be stored this may take up to 1 minute",_warehouse),30)
-            ACTIVEBLUEGROUPS:ForeEachGroupAnyInZone(_zone,function(_group)  
+            ACTIVEBLUEGROUPS:ForEachGroupAnyInZone(_zone,function(_group)  
                 if _group:AllOnGround() == true then
                     _wh:__AddAsset(10,_group)
                     SCHEDULER:New(nil,function() 
@@ -318,6 +319,8 @@ function WAREHOUSEPACKUP(_group,_warehouse,_col)
                 end
             end)
         end
+    else
+        MessageToGroup(_group,"Unable to put troops into that warehouse you don't own it",30)
     end
 end
 

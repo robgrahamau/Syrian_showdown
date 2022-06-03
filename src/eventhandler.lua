@@ -127,33 +127,38 @@ function hevent:OnEventMarkRemoved(EventData)
     local vec3={y=EventData.pos.y, x=EventData.pos.x, z=EventData.pos.z}
     local coord = COORDINATE:NewFromVec3(vec3)
     local _coalition = EventData.coalition
+    local _col = EventData.coalition
     local red = false
     if _coalition == 1 then
       red = true
     end
     coord.y = coord:GetLandHeight()
-    if EventData.text:lower():find("-weather") then
+    local basekeywords = UTILS.Split(text,",")
+    BASE:E({basekeywords})
+    local mainkey = basekeywords[1]
+    BASE:E({mainkey})
+    if mainkey == ("-weather") then
       self:handleWeatherRequest(text,coord,_group)
-    elseif EventData.text:lower():find("-tanker") then
+    elseif mainkey == ("-tanker") then
       self:handleTankerRequest(text,coord,_coalition,_playername,_group)
-    elseif EventData.text:lower():find("-help") then
+    elseif mainkey == ("-help") then
       self:handlehelp(_group)
-    elseif EventData.text:lower():find("-smoke") then
+    elseif mainkey == ("-smoke") then
       self:handleSmoke(text,coord,_coalition,_group,_playername)
-    elseif EventData.text:lower():find("-groupcheck") then
+    elseif mainkey == ("-groupcheck") then
       self:groupchecker()
-    elseif EventData.text:lower():find("-flare") then
+    elseif mainkey == ("-flare") then
       coord:FlareRed(math.random(0,360))
       SCHEDULER:New(nil,function() 
         coord:FlareRed(math.random(0,360))
       end,{},30)
-    elseif EventData.text:lower():find("-light") then
+    elseif mainkey == ("-light") then
       coord.y = coord.y + 1000
       coord:IlluminationBomb(1000)
-    elseif EventData.text:lower():find("-lightbright") then
+    elseif mainkey == ("-lightbright") then
       coord.y = coord.y + 1500
       coord:IlluminationBomb(10000)
-    elseif EventData.text:lower():find("-ctldfob") then
+    elseif mainkey == ("-ctldfob") then
       -- ctld drop.
       if ADMIN == true then
         if ctld ~= nil then
@@ -182,44 +187,44 @@ function hevent:OnEventMarkRemoved(EventData)
       else
         self:msg("Unable, Admin commands need to be active to use the ctldfob command",_group,30)
       end
-    elseif EventData.text:lower():find("-rqm") then
+    elseif mainkey == ("-rqm") then
         self:randomspawn(text,coord,_playername,_group)
-    elseif EventData.text:lower():find("-routeside") then
+    elseif mainkey == ("-routeside") then
       if ADMIN == true then
         self:routemassgroup(text,coord,_playername,_group)
       else
         self:msg("Unable, Admin commands need to be active to use the routeside command",_group,30)
       end
-    elseif EventData.text:lower():find("-massdel") then
+    elseif mainkey == ("-massdel") then
       if ADMIN == true then
         self:deletemassgroup(text,coord,_playername)
       else
         self:msg("Unable, Admin commands need to be active to use the massdel command",_group,30)
       end
-    elseif EventData.text:lower():find("-explode") then
+    elseif mainkey == ("-explode") then
       if ADMIN == true then
         self:handleExplosion(text,coord,_playername,_group)
       else
         self:msg("Unable, Admin commands need to be active to use the -explode command",_group,30)
       end
-    elseif EventData.text:lower():find("-admin") then
+    elseif mainkey == ("-admin") then
         self:handleeadmin(text,_playername)
-    elseif EventData.text:lower():find("-radmin") then
+    elseif mainkey == ("-radmin") then
         self:rhandleeadmin(text,_group,_playername)
-    elseif EventData.text:lower():find("-spawn") or EventData.text:lower():find("-rs") then
+    elseif mainkey == ("-spawn") or mainkey == ("-rs") then
       if ADMIN == true then
         self:newhandlespawn(text2,coord,_group,_playername)
       else
         self:msg("Unable, Admin commands need to be active to use the spawn command",_group,30)
       end
-    elseif EventData.text:lower():find("-load") then
+    elseif mainkey == ("-load") then
       if ADMIN == true then
         _loadfile("input.lua",_PERSISTANCEPATH)
         self:msg("input.lua should have completed its run",_group,30)
       else
         self:msg("unable, Admin Commands need to be active to input a file",_group,30)
       end
-    elseif EventData.text:lower():find("-despawn") or EventData.text:lower():find("-ds") then
+    elseif mainkey == ("-despawn") or mainkey == ("-ds") then
       if ADMIN == true then
         self:handledespawn(text2,_playername,_group)
       else
@@ -228,20 +233,20 @@ function hevent:OnEventMarkRemoved(EventData)
     --elseif EventData.text:lower():find("-runscript") then
     --  hm("Wow ok " .. playername .. "is attempting to run a script.. hope they know the magic words")
     --  self:handleScript(text2,_playername,_group)
-    elseif EventData.text:lower():find("-msgall") or EventData.text:lower():find("-ma") then
+    elseif mainkey == ("-msgall") or mainkey == ("-ma") then
       if ADMIN == true then
         self:msgtoall(text2)
       else
         self:msg("Unable, Admin commands need to be active to use msgall",_group,30)
       end
-    elseif EventData.text:lower():find("-deploy") then
+    elseif mainkey == ("-deploy") then
       self:warehousedeploy(text,text2,coord,_playername,_group,_coalition)
-    elseif EventData.text:lower():find("-transfer") then
+    elseif mainkey == "-transfer" then
       self:warehousetransfer(text,text2,_playername,_group,_coalition)
-    elseif EventData.text:lower():find("-assets") then
-      self:warehousecheck(text,text2,_playername,_group,_coalition)
-    elseif EventData.text:lower():find("-storeasset") then
-      self:warehousestore(_text,_text2,_group,_col)
+    elseif mainkey == "-whcheck" then
+      self:warehousecheck(text,text2,_playername,_coalition)
+    elseif mainkey == "-storeassets" then
+      self:warehousestore(text,text2,_group,_coalition)
     end
   end
 end
@@ -257,7 +262,7 @@ function hevent:warehousestore(_text,_text2,_group,_col)
     local str = UTILS.Split(keyprhase,"=")
     local key=str[1]
     local val=str[2]
-    if key:lower() == "w" or key:lower() == "warehouse" then
+    if key:lower() == "w" or key:lower() == "warehouse" or key:lower() == "in" or key:lower() == "at" then
       _warehouse = val:lower()
     end
   end
@@ -291,7 +296,7 @@ function hevent:warehousecheck(_text,_text2,_group,_col)
     local str = UTILS.Split(keyprhase,"=")
     local key=str[1]
     local val=str[2]
-    if key:lower() == "w" or key:lower() == "warehouse" then
+    if key:lower() == "w" or key:lower() == "warehouse" or key:lower() == "in" or key:lower() == "at" or key:lower() == "from" then
       _warehouse = val:lower()
     end
     if key:lower() == "attrib" or key:lower() == "a" then
@@ -456,12 +461,12 @@ function hevent:warehousedeploy(_text,_text2,_coord,_playername,_group,_col)
     local str = UTILS.Split(keyprhase,"=")
     local key=str[1]
     local val=str[2]
-    if key:lower() == "w" or key:lower() == "from" then
+    if key:lower() == "w" or key:lower() == "warehouse" or key:lower() == "at" or key:lower() == "from" then
       _warehouse = val:lower()
     end
 
     if key:lower() == "a" or key:lower()=="attrib" then
-      if val:lower() == "armor" then
+      if val:lower() == "armor" or val:lower() == "armour" or val:lower() == "tank" or val:lower() == "tanks" then
         _unittype = WAREHOUSE.Attribute.GROUND_TANK
       elseif val:lower() == "apc" or val:lower() == "ifv" then 
         _unittype = WAREHOUSE.Attribute.GROUND_APC
@@ -469,7 +474,7 @@ function hevent:warehousedeploy(_text,_text2,_coord,_playername,_group,_col)
         _unittype = WAREHOUSE.Attribute.GROUND_INFANTRY
       elseif val:lower() == "aaa" then
         _unittype = WAREHOUSE.Attribute.GROUND_AAA
-      elseif val:lower() == "art" then
+      elseif val:lower() == "art" or val:lower() == "artillery" then
         _unittype = WAREHOUSE.Attribute.GROUND_ARTILLERY
       elseif val:lower() == "sam" then
         _unittype = WAREHOUSE.Attribute.GROUND_SAM
