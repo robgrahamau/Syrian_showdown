@@ -1,4 +1,4 @@
-
+env.info("hound.lua")
 do
     if STTS ~= nil then
         -- STTS.DIRECTORY = "C:\\Program Files\\DCS-SimpleRadio-Standalone"
@@ -935,12 +935,13 @@ do
             ['Mi-8MT'] = {antenna = {size = 8, factor = 1}},
             ['UH-1H'] = {antenna = {size = 4, factor = 1}},
             ['KA-27'] = {antenna = {size = 4, factor = 1}},
-            ['C-130'] = {antenna = {size = 35, factor = 1}},
-            ['Hercules'] = {antenna = {size = 35, factor = 1}}, -- Anubis' C-130J
-            ['C-17A'] = {antenna = {size = 50, factor = 1}},
+            ['C-130'] = {antenna = {size = 18, factor = 1}},
+            ['Hercules'] = {antenna = {size = 18, factor = 1}}, -- Anubis' C-130J
+            ['C-17A'] = {antenna = {size = 20, factor = 0.75}},
+            ['KC135MPRS'] = {antenna = {size = 20, factor = 0.75}},
             ['S-3B'] = {antenna = {size = 18, factor = 0.8}},
-            ['E-3A'] = {antenna = {size = 9, factor = 0.5}},
-            ['E-2C'] = {antenna = {size = 7, factor = 0.5}},
+            ['E-3A'] = {antenna = {size = 20, factor = 0.9}},
+            ['E-2C'] = {antenna = {size = 18, factor = 0.9}},
             ['Tu-95MS'] = {antenna = {size = 50, factor = 1}},
             ['Tu-142'] = {antenna = {size = 50, factor = 1}},
             ['IL-76MD'] = {antenna = {size = 48, factor = 0.8}},
@@ -6208,3 +6209,5 @@ do
     env.info("[Hound] - finished loading (".. HOUND.VERSION..")")
 end
 -- Hound version 0.2.2 - Compiled on 2022-03-21 12:49
+
+env.info("hound.lua end")

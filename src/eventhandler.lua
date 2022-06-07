@@ -22,8 +22,8 @@ hevent = {
 ---@param _markers boolean - Do we handle marker events
 ---@param _lqm boolean - do we handle landing qualify mark events
 ---@param _death boolean - do we handle death events
----@param _tankertime int - tanker marker time
----@param _tankercooldown int - how long between tanker marks we can go.
+---@param _tankertime integer - tanker marker time
+---@param _tankercooldown integer - how long between tanker marks we can go.
 ---@return table|nil
 function hevent:New(_markers,_lqm,_death,_tankertime,_tankercooldown)
     local self = BASE:Inherit(self,BASE:New())
@@ -38,8 +38,8 @@ end
 
 --- sends a message out but does a check to see if we have a valid group or not if group is nil then we send to all
 function hevent:msg(_msg,_group,_duration,_infotype,_clear)
-  _infotype = infotype or nil
-  _clear = clear or false
+  _infotype = _infotype or nil
+  _clear = _clear or false
   if _group == nil then
     MESSAGE:New(_msg,_duration,_infotype,_clear):ToAll()
     self:E({_msg,_duration,_group})
@@ -126,6 +126,7 @@ function hevent:OnEventMarkRemoved(EventData)
     local text2 = EventData.text
     local vec3={y=EventData.pos.y, x=EventData.pos.x, z=EventData.pos.z}
     local coord = COORDINATE:NewFromVec3(vec3)
+    local _coord = coord
     local _coalition = EventData.coalition
     local _col = EventData.coalition
     local red = false
@@ -247,9 +248,92 @@ function hevent:OnEventMarkRemoved(EventData)
       self:warehousecheck(text,text2,_playername,_coalition)
     elseif mainkey == "-storeassets" then
       self:warehousestore(text,text2,_group,_coalition)
+    elseif mainkey == "-mount" then
+      self:MountTroops(text,text2,_group,_coalition)
+    elseif mainkey == "-dismount" then
+      self:DisMountTroops(text,text2,_group,_coalition,coord)
     end
   end
 end
+
+function hevent:MountTroops(_text,_text2,_group,_col)
+  local keywords = UTILS.Split(_text2,",")
+  local _infgroup = nil
+  local _infgroupname = nil
+  local _infgroupsize = 0
+  local _transportgroup = nil
+  local _transportgroupname = nil
+  local _transportcapacity = 0
+  for _,keyprhase in pairs(keywords) do
+    local str = UTILS.Split(keyprhase,"=")
+    local key=str[1]
+    local val=str[2]
+    if key:lower() == "inf" or key:lower() == "i" or key:lower() == "troops" or key:lower() == "infantry" then
+      _infgroup = GROUP:FindByName(val)
+      if _infgroup == nil then
+        self:msg(text.format("Unable to find infantry group %s so can not mount",val),_group,30)
+        return
+      end
+      if _infgroup:HasAttribute("Infantry") ~= true then
+        self:msg(text.format("group %s was is not an infantry group.",val),_group,30)
+        return
+      end 
+      if _infgroup:GetCoalition() ~= _col then
+        self:msg(text.format("group %s was is not part of your coalition.",val),_group,30)
+        return
+      end
+      _infgroupname = val
+      _infgroupsize = _infgroup:GetSize()
+    end
+    if key:lower() == "apc" or key:lower() == "apc" or key:lower() == "heli" or key:lower() == "helicopter" or key:lower() == "truck" or key:lower() == "transport" then
+      _transportgroup = GROUP:FindByName(val)
+      if _transportgroup == nil then
+        self:msg(text.format("Unable to find transport group %s so can not mount",val),_group,30)
+        return
+      end
+      if _transportgroup:GetCoalition() ~= _col then
+        self:msg(text.format("group %s is not part of your coalition",val),_group,30)
+        return
+      end
+      if _transportgroup:HasAttribute("Infantry carriers") ~= true or _transportgroup:HasAttirbute("Transport helicopters") ~= true  or _transportgroup:hasAttribute("Truck") ~= true then
+        self:msg(text.format("group %s is reporting that it is not a Infantry Carrier, Truck or Transport Helicopter",val),_group,30)
+        return
+      end
+      _transportcapacity = _transportgroup:GetTroopCapacity()
+      _transportgroupname = val
+    end
+  end
+  if _transportcapacity < _infgroupsize then
+    self:msg(string.format("Unable to process command for this group, you troops have %d size and the transport has %d capacity",_infgroupsize,_transportcapcity),_group,30)
+    return
+  end
+  self:msg(string.format("Moving group %s to group %s to initate transport, this may take up to 5 minutes",_transportgroupname,_infgroupname),_group,30)
+  rgembark(_infgroup,_transportgroup)
+end
+
+function hevent:DisMountTroops(_text,_text2,_group,_col,_coord)
+  local keywords = UTILS.Split(_text2,",")
+  local _transportgroup = nil
+  local _transportname
+  for _,keyprhase in pairs(keywords) do
+    local str = UTILS.Split(keyprhase,"=")
+    local key=str[1]
+    local val=str[2]
+    if key:lower() == "transport" or key:lower() == "apc" or key:lower() == "heli" or key:lower() == "truck" or key:lower()=="from" or key:lower()=="helicopter" then
+      _transportgroup = GROUP:FindByName(val)
+      if _transportgroup == nil then
+        self:msg(text.format("Unable to find transport group %s so can not dismount",val),_group,30)
+        return
+      end
+      if _transportgroup:GetCoalition() ~= _col then
+        self:msg(string.format("Group %s was not part of your coalition can't disembark",val),_group,30)
+      end
+    end
+  end
+  self:msg(string.format("Attempting to dismount any troops that are in unit %s",_transportname),_group,30)
+  rgdisembark(_transportgroup,_coord,_group)
+end
+
 ---store in warehouse -storeasset,w=name or -storeassets,warehouse=name
 ---@param _text string
 ---@param _text2 string
@@ -1259,7 +1343,9 @@ end
 
 ---Handles a Despawn request.
 ---@param text string
-function hevent:handledespawn(text)
+---@param _playername string DCS player name
+---@param _group GROUP dcs group.
+function hevent:handledespawn(text,_playername,_group)
   BASE:E({"DeSpawn Request",text})
   local keywords=UTILS.Split(text, ",")
   local unit = nil

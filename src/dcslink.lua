@@ -1,3 +1,4 @@
+env.info("dcslink.lua")
 ----------------------------------------
 ----- BASED ON THE DCSTCP Link by DDCS.
 -- Heavily Modified by Rob Graham.
@@ -470,3 +471,6 @@ do
 		end
 	end, nil, timer.getTime() + DATA_TIMEOUT_SEC)
 end
+
+
+env.info("hound.lua end")

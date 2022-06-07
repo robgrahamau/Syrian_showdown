@@ -1,3 +1,4 @@
+env.info("moosectld.lua")
 -- moose ctld
 
 bluectld= CTLD:New(coalition.side.BLUE,{"Super","super","SUPER",},"Transport Command")
@@ -60,8 +61,8 @@ redctld:UnitCapabilities("UH-60L",true,true,2,14,16,3500)
 redctld:UnitCapabilities("UH-1H",true,true,1,8,16,1000)
 redctld:Start()
 
-redctld:AddTroopsCargo("Syrian platoon",{"Syrian Platoon"},CTLD_CARGO.Enum.TROOPS,12,100,10,"Troops")
-redctld:AddTroopsCargo("Syrian manpad",{"Syrian manpad"},CTLD_CARGO.Enum.TROOPS,6,100,10,"Troops")
+redctld:AddTroopsCargo("Syrian platoon",{"syrian platoon"},CTLD_CARGO.Enum.TROOPS,12,100,10,"Troops")
+redctld:AddTroopsCargo("Syrian manpad",{"syrian manpad"},CTLD_CARGO.Enum.TROOPS,6,100,10,"Troops")
 redctld:AddTroopsCargo("Syrian engineers",{"syrian engineers"},CTLD_CARGO.Enum.ENGINEERS,4,80,10,"Troops")
 
 redctld:AddCratesCargo("SA5",{"sa5"},CTLD_CARGO.Enum.FOB,30,750,45,"SAM SYSTEMS")
@@ -78,3 +79,4 @@ redctld:AddCTLDZone("tanf",CTLD.CargoZoneType.LOAD,SMOKECOLOR.Blue,false,false)
 redctld:AddCTLDZone("palmyra",CTLD.CargoZoneType.LOAD,SMOKECOLOR.Blue,true,false)
 redctld:AddCTLDZone("ezor",CTLD.CargoZoneType.LOAD,SMOKECOLOR.Blue,true,false)
 
+env.info("moosectld.lua end")

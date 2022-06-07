@@ -1,13 +1,13 @@
 -- Important Globals go here
 env.info("TGW Syria By Robert Graham Initialising.")
-_VERSION = 0.26
-_LASTUPDATE = "4/06/2022"
+_VERSION = 0.27
+_LASTUPDATE = "07/06/2022"
 _DEBUG = true
 _PASSWORD = "test"
 ADMINPASSWORD2 = "testing"
 trigger.action.setUserFlag("SSB",100)
 _SRCPATH = "syria\\src\\"
-_PERSISTANCEPATH = "syra\\"
+_PERSISTANCEPATH = "syria\\"
 dofile(lfs.writedir() .. _SRCPATH .. "utils.lua")
 _HMLOADED = false
 _USEHYPEMAN = false
@@ -25,42 +25,12 @@ NOWHOUR = nil
 NOWMINUTE = nil
 NOWSEC = nil
 
----Stand Alone version of BASE to use as my own logged.
----@param Arguments any
-function rlog( Arguments )
-    if _DEBUG then
-        local DebugInfoCurrent = debug.getinfo( 2, "nl" )
-        local DebugInfoFrom = debug.getinfo( 3, "l" )
-        local Function = "function"
-        if DebugInfoCurrent.name then
-            Function = DebugInfoCurrent.name
-        end
-        local LineCurrent = DebugInfoCurrent.currentline
-          local LineFrom = -1 
-        if DebugInfoFrom then
-          LineFrom = DebugInfoFrom.currentline
-        end
-        env.info( string.format( "%6d(%6d)/%1s:%30s%05s.%s(%s)" , LineCurrent, LineFrom, "Info", "Rob Debug", ":", Function, RGUTILS.oneLineSerialize( Arguments ) ) )
-        hm(string.format( "%6d(%6d)/%1s:%30s%05s.%s(%s)" , LineCurrent, LineFrom, "Info", "Rob Debug", ":", Function, RGUTILS.oneLineSerialize( Arguments ) ) )
-    else
-      env.info( string.format( "%1s:%30s%05s(%s)" , "Info", "Rob Debug", ":", RGUTILS.oneLineSerialize( Arguments ) ) )
-      hm(string.format( "%1s:%30s%05s(%s)" , "Info", "Rob Debug", ":", RGUTILS.oneLineSerialize( Arguments ) ) )
-    end
+
+function rlog(_val)
+    RGUTILS.log(_val)
 end
 
-
-if os ~= nil then
-    NOWTABLE = os.date('*t')
-    NOWYEAR = NOWTABLE.year
-    NOWMONTH = NOWTABLE.month
-    NOWDAY = NOWTABLE.day
-    NOWHOUR = NOWTABLE.hour
-    NOWMINUTE = NOWTABLE.min
-    NOWSEC = NOWTABLE.sec
-    NOWTIME = os.time()
-else
-    rlog("WARNING, OS IS SANATIZED AND WE ARE UNABLE TO GET THAT INFORMATION. SOME THINGS MAY NOT FUNCTION CORRECTLY.")
-end
+RGUTILS:updatetime()
 
 ---Hypeman Msg Handler
 ---@param msg string
@@ -95,6 +65,8 @@ end
 
 _loadfile("moose.lua",_SRCPATH)
 _loadfile("mist.lua",_SRCPATH)
+timeupdate = TIMER:New(function() RGUTILS:updatetime() end)
+timeupdate:Start(nil,1)
 if _USEHYPEMAN then
     _loadfile("HypeMan.lua","c:\\HypeMan\\")
     _HMLOADED = true
@@ -107,6 +79,10 @@ _loadfile("moosectld.lua",_SRCPATH)
 _loadfile("hound.lua",_SRCPATH)
 _loadfile("dcslink.lua",_SRCPATH)
 _loadfile("factory.lua",_SRCPATH)
+_loadfile("transporters.lua",_SRCPATH)
+_loadfile("groundintel.lua",_SRCPATH)
+_loadfile("carrier.lua",_SRCPATH)
+-- _loadfile("randommpads.lua",_SRCPATH)
 -- Temp stuff for testing on the Syria Misson -- 
 
 
@@ -174,7 +150,8 @@ if initalstart == true then
     ADDTOWAREHOUSE("m1a2",8,whouse.h3)
     ADDTOWAREHOUSE("paladin",2,whouse.h3)
     ADDTOWAREHOUSE("oh58d",2,whouse.h3)
-
+    ADDTOWAREHOUSE("m939",20,whouse.tanf)
+    ADDTOWAREHOUSE("m939",20,whouse.h3)
 end
 
 
@@ -185,26 +162,40 @@ Elint_blue:addPlatform("commtower3")
 Elint_blue:addPlatform("commtower4")
 Elint_blue:addPlatform("f16seed1")
 Elint_blue:addPlatform("f16seed2")
-Elint_blue:preBriefedContact("RS ewr55")
+Elint_blue:addPlatform("OVERLORD1")
+Elint_blue:addPlatform("TEXACO11")
 Elint_blue:setMarkerType(HOUND.MARKER.POLYGON)
 Elint_blue:enableMarkers()
 Elint_blue:enableBDA()
+-- Elint_blue:enableController()
 Elint_blue:systemOn()
 
+local prespawnsa10 = CTLD_CARGO:New(nil,"SA10",{"sa10"},CTLD_CARGO.Enum.FOB,true,true,24,nil,false,750,3,"SAM SYSTEMS")
+redctld:InjectVehicles(ZONE:New("sa10"),prespawnsa10)
+redctld:InjectVehicles(ZONE:New("palmyrasa10"),prespawnsa10)
+bluectld:InjectVehicles(ZONE:New("h3north_patriot"),CTLD_CARGO:New(nil,"Patriot",{"patriot"},CTLD_CARGO.Enum.FOB,true,true,24,nil,false,750,3,"SAM SYSTEMS"))
 
-redctld:InjectVehicles(ZONE:New("sa10"),CTLD_CARGO:New(nil,"SA10",{"sa10"},CTLD_CARGO.Enum.FOB,true,true,24,nil,false,750,3,"SAM SYSTEMS"))
-co = coroutine.create(function ()
-    env.info("This run in a coroutine")
-  end)
-  coroutine.resume(co)
+EZORFACTORY = RGFactory:New("Ez-Zor Factory","hl zu23",1,(60*60*24*3.5),(60*60*24*4),true,1)
+EZORFACTORY:AddParts(197492779,"hanger")
+EZORFACTORY:AddParts(118065130,"hanger")
+EZORFACTORY:AddParts(197492772,"industrial")
+EZORFACTORY:AddParts(197492805,"industrial")
+EZORFACTORY:AddParts(118065223,"hanger")
 
-ezorfactory = RGFactory:New("Ez-Zor Factory","hl zu23",1,(60*60*24*3.5),(60*60*24*4),true,1)
-ezorfactory:AddParts(197492779,"hanger")
-ezorfactory:AddParts(118065130,"hanger")
-ezorfactory:AddParts(197492772,"industrial")
-ezorfactory:AddParts(197492805,"industrial")
-ezorfactory:AddParts(118065223,"hanger")
+EZORFACTORY:AddWarehouse(whouse.ezor)
+EZORFACTORY:enableMarkers(true)
+EZORFACTORY:Start()
 
-ezorfactory:AddWarehouse(whouse.ezor)
-ezorfactory:enableMarkers(true)
-ezorfactory:Start()
+EZORFACTORY1 = RGFactory:New("Ez-zor Factory 1","syrian platoon",1,(60*60*24*2),(60*60*24*4),true,1)
+EZORFACTORY1:AddParts("118065666","hanger")
+EZORFACTORY1:AddParts("197492801","Building")
+EZORFACTORY1:AddParts("197492802","Building")
+EZORFACTORY1:AddParts("197492755","Building")
+EZORFACTORY1:AddWarehouse(whouse.ezor)
+EZORFACTORY1:enableMarkers(true)
+EZORFACTORY1:Start()
+
+
+
+
+env.info("loader.lua end")

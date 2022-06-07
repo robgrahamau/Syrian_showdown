@@ -1,24 +1,33 @@
+env.info("warehouse.lua")
+
 whouse = {}
 whcoord = {}
 
 
 whouse.ezor = WAREHOUSE:New(STATIC:FindByName("ezZor"), "Deir ez-Sor")
 whouse.ezor:SetAutoDefenceOn()
+whouse.ezor:SetSpawnZone(ZONE:New("ezzor_packup"))
 whcoord["ezor"] = {}
 whcoord["ezor"].coord = COORDINATE:New()
 whcoord["ezor"].zone = ZONE:New("ezzor_packup")
+
 whouse.tanf = WAREHOUSE:New(STATIC:FindByName("tanf"), "Tanf")
 whouse.tanf:SetAutoDefenceOn()
+whouse.tanf:SetSpawnZone(ZONE:New("tanf_packup"))
 whcoord["tanf"] = {}
 whcoord["tanf"].coord = COORDINATE:New()
 whcoord["tanf"].zone = ZONE:New("tanf_packup")
+
 whouse.palmyra = WAREHOUSE:New(STATIC:FindByName("palmyra"),"Palmyra")
 whouse.palmyra:SetAutoDefenceOn()
+whouse.palmyra:SetSpawnZone(ZONE:New("palmyra_packup"))
 whcoord["palmyra"] = {}
 whcoord["palmyra"].coord = COORDINATE:New()
 whcoord["palmyra"].zone = ZONE:New("palmyra_packup")
+
 whouse.h3 = WAREHOUSE:New(STATIC:FindByName("h3"),"H3")
 whouse.h3:SetAutoDefenceOn()
+whouse.h3:SetSpawnZone(ZONE:New("h3_packup"))
 whcoord["h3"] = {}
 whcoord["h3"].coord = COORDINATE:New()
 whcoord["h3"].zone = ZONE:New("h3_packup")
@@ -72,7 +81,6 @@ function ADDTOWAREHOUSE(_asset,_amount,_warehouse,_attribute,_cargohold,_weight,
     _skill = _skill or nil
     _liveries = _liveries or nil
     _assignment = _assignment or nil
-
     _warehouse:AddAsset(_asset,_amount,_attribute,_cargohold,_weight,_load,_skill,_liveries,_assignment)
 end
 
@@ -334,3 +342,5 @@ function WAREHOUSESTOCKCHECK(_group,warehouse,_type,_col)
 
 
 end
+
+env.info("hound.lua end")

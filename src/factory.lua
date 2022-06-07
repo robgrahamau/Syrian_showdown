@@ -202,25 +202,26 @@ function RGFactory:CheckFactoryItems()
     self.currenthealth = _ch
     self:E({"Marker Active is",self.markeractive})
     if self.markeractive == true then
-        self:E({"Marker is",self.marker})
-        if self.marker ~= nil then
-            local _nextmarker = 0
-            local _nextprod = 0
-            local _nextsend = 0
-            local _currenthealth = (self.currenthealth *100)
-            local _nextstock = self.storedproduction + (self.production_amount/self.currenthealth)
-            if self.useostime == true then
-                _nextmarker = self.nextmarkertime - NOWTIME
-                _nextprod = self.nextproduction_time - NOWTIME
-                _nextsend = self.nextsendtime - NOWTIME
-            else
-                _nextmarker = self.nextmarkertime - self.noosmarkertime
-                _nextprod = self.nextproduction_time - self.noosnextproduction_time
-                _nextsend = self.nextsendtime - self.noosnextsendtime
-            end
-            local mtxt = string.format(" %s Health is: %d | Producing: %s | Stock Now: %d | Next: %d \n Next Production in: %s | Next Warehouse send in : %s",self.Factoryname,_currenthealth,self.production,self.storedproduction,_nextstock,RGUTILS.getTimefromseconds(_nextprod),RGUTILS.getTimefromseconds(_nextsend))
-            self:UpdateMarkerText(mtxt)
+        -- self:E({"Marker is",self.marker})
+        local _nextmarker = 0
+        local _nextprod = 0
+        local _nextsend = 0
+        local _currenthealth = (self.currenthealth *100)
+        local _nextstock = self.storedproduction + (self.production_amount/self.currenthealth)
+        BASE:E({"use os time",self.useostime})
+        if self.useostime == true then
+            _nextmarker = self.nextmarkertime - NOWTIME
+            _nextprod = self.nextproduction_time - NOWTIME
+            _nextsend = self.nextsendtime - NOWTIME
+            BASE:E({"ostime",self.nextmarkertime,self.nextproduction_time,self.sendtime,_nextmarker,_nextprod,_nextsend})
+        else
+            _nextmarker = self.nextmarkertime - self.noosmarkertime
+            _nextprod = self.nextproduction_time - self.noosnextproduction_time
+            _nextsend = self.nextsendtime - self.noosnextsendtime
+            BASE:E({"DCStime",self.nextmarkertime,self.nextproduction_time,self.sendtime,_nextmarker,_nextprod,_nextsend})
         end
+        local mtxt = string.format(" %s Health is: %d | Producing: %s | Stock Now: %d | Next: %d \n Next Production in: %s | Next Warehouse send in : %s",self.Factoryname,_currenthealth,self.production,self.storedproduction,_nextstock,RGUTILS.getTimefromseconds(_nextprod),RGUTILS.getTimefromseconds(_nextsend))
+        self:UpdateMarkerText(mtxt)
     end
 end
 

@@ -1,4 +1,40 @@
 RGUTILS = {}
+---Stand Alone version of BASE to use as my own logged.
+---@param Arguments any
+function RGUTILS.log( Arguments )
+    if _DEBUG then
+        local DebugInfoCurrent = debug.getinfo( 2, "nl" )
+        local DebugInfoFrom = debug.getinfo( 3, "l" )
+        local Function = "function"
+        if DebugInfoCurrent.name then
+            Function = DebugInfoCurrent.name
+        end
+        local LineCurrent = DebugInfoCurrent.currentline
+          local LineFrom = -1 
+        if DebugInfoFrom then
+          LineFrom = DebugInfoFrom.currentline
+        end
+        env.info( string.format( "%6d(%6d)/%1s:%30s%05s.%s(%s)" , LineCurrent, LineFrom, "Info", "Rob Debug", ":", Function, RGUTILS.oneLineSerialize( Arguments ) ) )
+        hm(string.format( "%6d(%6d)/%1s:%30s%05s.%s(%s)" , LineCurrent, LineFrom, "Info", "Rob Debug", ":", Function, RGUTILS.oneLineSerialize( Arguments ) ) )
+    else
+      env.info( string.format( "%1s:%30s%05s(%s)" , "Info", "Rob Debug", ":", RGUTILS.oneLineSerialize( Arguments ) ) )
+      hm(string.format( "%1s:%30s%05s(%s)" , "Info", "Rob Debug", ":", RGUTILS.oneLineSerialize( Arguments ) ) )
+    end
+end
+function RGUTILS.updatetime()
+  if os ~= nil then
+      NOWTABLE = os.date('*t')
+      NOWYEAR = NOWTABLE.year
+      NOWMONTH = NOWTABLE.month
+      NOWDAY = NOWTABLE.day
+      NOWHOUR = NOWTABLE.hour
+      NOWMINUTE = NOWTABLE.min
+      NOWSEC = NOWTABLE.sec
+      NOWTIME = os.time()
+  else
+      rlog("WARNING, OS IS SANATIZED AND WE ARE UNABLE TO GET THAT INFORMATION. SOME THINGS MAY NOT FUNCTION CORRECTLY.")
+  end
+end
 function RGUTILS.getTimefromseconds(time)
   local days = math.floor(time/86400)
   local remaining = time % 86400
