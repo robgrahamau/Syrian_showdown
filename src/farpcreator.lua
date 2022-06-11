@@ -75,6 +75,7 @@
     userandompoint = false,
     useclosestpoint = false,
     addfarps = false,
+    addwarehouse = false,
     radios ={127.5,125.25,129.25}
   }
   
@@ -113,6 +114,11 @@ function FARPCREATOR:New(name,prefix,convoytemplate,servicetemplate,countryid)
     self.usestartpoints = false
     BASE:E({self.name,"Created FARP"})
     return self
+end
+
+function FARPCREATOR:Addwarehouse(_value)
+  self.addwarehouse = _value
+  return self
 end
 
   --- Allows for the changing of the radius's for this Farp convoy checks
@@ -450,8 +456,37 @@ function FARPCREATOR:SpawnFarp(temptable,cid)
   self:SpawnStatic("Farp1_Tyre16_" .. self.farpcounter .. "","H-tyre_B_WF","Fortifications","Black_Tyre_WF",3,(temptable.FarpAX - 44.61905829),(temptable.FarpAY - 13.74232991),(self.FarpHDG ))
   self:SpawnStatic("Farp1_Tyre17_" .. self.farpcounter .. "","H-tyre_B_WF","Fortifications","Black_Tyre_WF",3,(temptable.FarpAX - 43.93118389),(temptable.FarpAY - -22.67033198),(self.FarpHDG )) 
   self:SpawnFarpBuilding("Farp_Heliport_" ..self.farpcounter .. "","invisiblefarp","Heliports","Invisible FARP",self.radios[self.farpcounter],0,self.farpcounter,(temptable.FarpAX - 0.00000000),(temptable.FarpAY - 0.00000000),(self.FarpHDG))
+
   if self.addfarps == true then
     self:AddStartPoint(temptable.FARPCoordinate)
+  end
+  
+  if self.addwarehouse == true then
+    if self.farpcounter == 1 then
+      farp1zone = ZONE_RADIUS:New("FARP1ZONE",vehiclevect:GetVec2(),300)
+      whouse.farp1 = WAREHOUSE:New(STATIC:FindByName("Farp1_ComandPost_" .. self.farpcounter .. ""), "FARP" .. self.farpcounter .. "")
+      whouse.farp1:SetAutoDefenceOn()
+      whouse.farp1:SetSpawnZone(farp1zone)
+      whcoord["farp1"] = {}
+      whcoord["farp1"].coord = COORDINATE:New()
+      whcoord["farp1"].zone = farp1zone
+    elseif self.farpcounter == 2 then
+      farp2zone = ZONE_RADIUS:New("FARP2ZONE",vehiclevect:GetVec2(),300)
+      whouse.farp2 = WAREHOUSE:New(STATIC:FindByName("Farp1_ComandPost_" .. self.farpcounter .. ""), "FARP" .. self.farpcounter .. "")
+      whouse.farp2:SetAutoDefenceOn()
+      whouse.farp2:SetSpawnZone(farp2zone)
+      whcoord["farp2"] = {}
+      whcoord["farp2"].coord = COORDINATE:New()
+      whcoord["farp2"].zone = farp2zone
+    else
+      farp3zone = ZONE_RADIUS:New("FARP3ZONE",vehiclevect:GetVec2(),300)
+      whouse.farp3 = WAREHOUSE:New(STATIC:FindByName("Farp1_ComandPost_" .. self.farpcounter .. ""), "FARP" .. self.farpcounter .. "")
+      whouse.farp3:SetAutoDefenceOn()
+      whouse.farp3:SetSpawnZone(farp1zone)
+      whcoord["farp3"] = {}
+      whcoord["farp3"].coord = COORDINATE:New()
+      whcoord["farp3"].zone = farp3zone
+    end
   end
   self:E({self.name,"Spawned Farp",self.farpcounter})
 end
