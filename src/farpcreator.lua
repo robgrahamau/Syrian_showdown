@@ -467,9 +467,9 @@ function FARPCREATOR:SpawnFarp(temptable,cid)
       whouse.farp1 = WAREHOUSE:New(STATIC:FindByName("Farp1_ComandPost_" .. self.farpcounter .. ""), "FARP" .. self.farpcounter .. "")
       whouse.farp1:SetAutoDefenceOn()
       whouse.farp1:SetSpawnZone(farp1zone)
-      whcoord["farp1"] = {}
       whcoord["farp1"].coord = COORDINATE:New()
       whcoord["farp1"].zone = farp1zone
+      whouse.farp1:Start()
     elseif self.farpcounter == 2 then
       farp2zone = ZONE_RADIUS:New("FARP2ZONE",vehiclevect:GetVec2(),300)
       whouse.farp2 = WAREHOUSE:New(STATIC:FindByName("Farp1_ComandPost_" .. self.farpcounter .. ""), "FARP" .. self.farpcounter .. "")
@@ -478,6 +478,7 @@ function FARPCREATOR:SpawnFarp(temptable,cid)
       whcoord["farp2"] = {}
       whcoord["farp2"].coord = COORDINATE:New()
       whcoord["farp2"].zone = farp2zone
+      whouse.farp2:Start()
     else
       farp3zone = ZONE_RADIUS:New("FARP3ZONE",vehiclevect:GetVec2(),300)
       whouse.farp3 = WAREHOUSE:New(STATIC:FindByName("Farp1_ComandPost_" .. self.farpcounter .. ""), "FARP" .. self.farpcounter .. "")
@@ -486,6 +487,7 @@ function FARPCREATOR:SpawnFarp(temptable,cid)
       whcoord["farp3"] = {}
       whcoord["farp3"].coord = COORDINATE:New()
       whcoord["farp3"].zone = farp3zone
+      whouse.farp3:Start()
     end
   end
   self:E({self.name,"Spawned Farp",self.farpcounter})

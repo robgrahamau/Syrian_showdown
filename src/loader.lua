@@ -1,14 +1,15 @@
 -- Important Globals go here
 env.info("TGW Syria By Robert Graham Initialising.")
-_VERSION = 0.27
-_LASTUPDATE = "07/06/2022"
+_VERSION = 0.28
+_LASTUPDATE = "12/06/2022"
 _DEBUG = true
 _PASSWORD = "test"
 ADMINPASSWORD2 = "testing"
 trigger.action.setUserFlag("SSB",100)
 _SRCPATH = "syria\\src\\"
 _PERSISTANCEPATH = "syria\\"
-_SRSPATH = "E:\\DCS-SimpleRadio-Standalone\\"
+_SRSPATH = "D:\\DCS-SimpleRadio-Standalone\\"
+--_SRSPATH = "E:\\DCS-SimpleRadio-Standalone\\"
 _SRSPORT = 5002
 dofile(lfs.writedir() .. _SRCPATH .. "utils.lua")
 _HMLOADED = false
@@ -87,10 +88,12 @@ _loadfile("transporters.lua",_SRCPATH)
 _loadfile("groundintel.lua",_SRCPATH)
 _loadfile("carrier.lua",_SRCPATH)
 
-_loadfile("syrianforces.lua",_SRCPATH)
-
+_loadfile("syrianairwings.lua",_SRCPATH)
 _loadfile("coalitionairwings.lua",_SRCPATH)
 _loadfile("coalitionawacs.lua",_SRCPATH)
+
+
+_loadfile("syrianforces.lua",_SRCPATH)
 _loadfile("coalitionforces.lua",_SRCPATH)
 -- _loadfile("randommpads.lua",_SRCPATH)
 -- Temp stuff for testing on the Syria Misson -- 

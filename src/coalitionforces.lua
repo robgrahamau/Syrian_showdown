@@ -25,13 +25,6 @@ if initalstart == true then
     ADDTOWAREHOUSE("m939",20,whouse.h3)
 end
 
-
-
-
-
-
-
-
 Elint_blue = HoundElint:create(coalition.side.BLUE)
 Elint_blue:addPlatform("commtower1")
 Elint_blue:addPlatform("commtower2")
@@ -47,14 +40,24 @@ Elint_blue:enableBDA()
 -- Elint_blue:enableController()
 Elint_blue:systemOn()
 
-
-
 bluectld:InjectVehicles(Z_H3PAT,CTLD_CARGO:New(nil,"Patriot",{"patriot"},CTLD_CARGO.Enum.FOB,true,true,24,nil,false,750,3,"SAM SYSTEMS"))
-
-
 COALITIONFARPCONTROL = FARPCREATOR:New("Tanf Control","Super","Convoytemplate","servicevehicletemplate",country.id.USA)
 COALITIONFARPCONTROL:UseStartPoints(true)
 COALITIONFARPCONTROL:AddStartPoint(atco)
 COALITIONFARPCONTROL:UseClosestPoint(true)
 COALITIONFARPCONTROL:AddFarpsToPoints(true)
 COALITIONFARPCONTROL:Start()
+
+function TANKERMISSION(_coord,_altitude,_speed,_heading,_leg,_system,_airwing,_repeats,_duration,_radiofreq,_radiomod,_tacan,_morse)
+local TankerMission = AUFTRAG:NewTANKER(_coord,_altitude,_speed,_heading,_leg,_system)
+TankerMission:SetRepeatOnFailure(_repeats)
+TankerMission:SetRepeatOnSuccess(_repeats)
+TankerMission:SetDuration(_duration)
+TankerMission:SetRadio(_radiofreq,_radiomod)
+TankerMission:SetTACAN(_tacan,_morse)
+
+_airwing:AddMission(TankerMission)
+end
+
+
+TANKERMISSION(Z_IDAKU:GetCoordinate(),30000,RGUTILS.CalculateTAS(30000,315,0),180,35,0,USAW380,300,(60*60*3),250,radio.modulation.AM,62,"SHL")

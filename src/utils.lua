@@ -1,3 +1,69 @@
+local p0  = 101325.0;  -- [N/m^2] = [Pa]
+local p1  =  22632.05545875171;                 -- [N/m^2] = [Pa] Calculated @ 11000.0000000000001 [ft]
+local p2  =   5474.884659730908;                -- [N/m^2] =-- [Pa] Calculated @ 20000.000000000001  [ft]
+local p3  =   868.0176477556424;                -- [N/m^2] = [Pa] Calculated @ 32000.000000000001  [ft]
+
+local p0hPa   =   1013.25;     -- [hPa]
+local p0inHG  =     29.92;     -- [inHG] Truncated 29.9213
+local p0mmHG                   = p0inHG*25.4;   -- [mmHG] w/ 25.4 [mm] = 1.0 [in]
+
+local T0  =    288.15;     -- [K]
+local T1  =    216.65;     -- [K]
+local T2  =    216.65;     -- [K]
+
+local h1  =  36089.238845144355;                -- [ft] = 11000 [m] w/ CftTOm
+local h2  =  65616.79790026246;                 -- [ft] = 20000 [m] w/ CftTOm
+local h3  = 104986.87664041994;                 -- [ft] = 32000 [m] w/ CftTOm
+
+local dTdh0 = -0.0019812;                     -- [K/ft] w/ CftTOm
+local dTdh0SI = -0.0065;   -- [K/m]
+
+local dTdh2 = 0.0003048;                     -- [K/ft] w/ CftTOm
+local dTdh2SI = 0.001;    -- [K/m]
+
+local CPascalTOPSI = 1.45037737730209e-04;
+local ChPaTOinHG  = p0inHG/p0hPa;
+local ChPaTOmmHG  = p0mmHG/p0hPa;
+local ClbPft3TOkgPm3 = 16.0184633739601;               -- [lb/ft^3] to [kg/m^3]
+
+local CftTOm = 0.3048;
+local CftTOnm = 1.64578833693305e-04;
+
+local CnmTOm = 1852.0;
+
+local CftPsTOkn   = CftTOnm*3600.0;
+local CftPsTOmph  = 3600.0/5280.0;
+local CftPsTOkph  = CftTOm*3600.0/1000.0;
+
+local CmPsTOkn    = 3600.0/CnmTOm;
+
+local CknTOftPs   = 1.0/(CftTOnm*3600.0);
+
+local CRGasSI = 287.053;    -- [m^2/(s^2*K)] = [J/(kg*K)]
+
+local CgSI = 9.80665;  -- [m/s^2]
+
+local CgRGas  = (CgSI*CftTOm)/CRGasSI;
+local CgRGasSI    = CgSI/CRGasSI;
+
+local CgRGas  = (CgSI*CftTOm)/CRGasSI;
+
+local CGamma  =      1.4;  -- [-]
+local CGammaRGas  = (CGamma*CRGasSI)/(CftTOm*CftTOm);   -- [ft^2/(s^2*K)]
+
+local CaSLSI  = math.sqrt(CGamma*CRGasSI*T0);
+local CPressureSLSI                    = 101325.0;  -- [Pa] = [N/m^2]
+local CaSLNU  = CaSLSI*CmPsTOkn;                    -- [kts] Nautical Unit
+local CRhoSLSI    =      1.225;    -- [kg/m^3]
+
+local CKelvinTOCelsius                 =    273.15;
+local CKelvinTORankine                 =      1.8;
+
+local CCelsiusTOFahrenheitLinear       =     32.0;
+local CCelsiusTOFahrenheitProportional =      1.8;
+
+
+
 RGUTILS = {}
 ---Stand Alone version of BASE to use as my own logged.
 ---@param Arguments any
@@ -194,4 +260,58 @@ RGUTILS.groupchecker = function()
   checker.redunits = ur
   checker.neutralunits = un
   return checker
+end
+
+
+function RGUTILS.calculateTemperaturePressure(ah) 
+  local T = 0.0
+  local p = 0.0
+  if (ah <= h1) then
+    -- Layer 0 > Troposphere
+    T = T0 + dTdh0*ah
+    p = p0*math.pow((T0/T), (CgRGasSI/dTdh0SI))
+  elseif (ah <= h2) then
+
+    T = T1;
+    p = p1*math.exp((CgRGas/T1)*(h1 - ah))
+  elseif (ah <= h3) then
+    -- Layer 2 > Stratosphere (1/2)
+    T = T2 + dTdh2*(ah - h2)
+    p = p2*math.pow((T2/T), (CgRGasSI/dTdh2SI))
+  else
+    local temp= {
+      T=0.0,
+      p=0.0,
+      Valid=false,
+    }
+    return temp
+  end
+  local temp= {
+    T = T,
+    p = p,
+    Valid = true,
+  }
+  return temp
+end
+
+
+
+function RGUTILS.CalculateTAS(_ALT,_CAS,_DISA)
+  local disa = _DISA or 0
+  local h = _ALT
+  local CAS = _CAS
+  local TemperaturePressure = RGUTILS.calculateTemperaturePressure(h);
+  if TemperaturePressure.Valid == false then
+    return
+  end
+  local T = TemperaturePressure.T + disa
+  local p = TemperaturePressure.p
+  Rho = p/(CRGasSI*T) 
+  a = math.sqrt(CGammaRGas*T)
+  local TAS = math.sqrt(5)*a*math.sqrt(math.pow(((CPressureSLSI/p)*(math.pow((CAS*CAS/(5.0*CaSLNU*CaSLNU)) + 1, (CGamma/(CGamma - 1))) - 1) + 1), (CGamma - 1)/CGamma) - 1)
+  local Mach = TAS/a
+  local EAS = TAS*math.sqrt(Rho/CRhoSLSI)
+  TAS = math.floor(TAS * CftPsTOkn)
+  EAS = math.floor(EAS * CftPsTOkn)
+  return TAS
 end

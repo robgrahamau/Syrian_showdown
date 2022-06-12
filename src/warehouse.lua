@@ -32,11 +32,44 @@ whcoord["h3"] = {}
 whcoord["h3"].coord = COORDINATE:New()
 whcoord["h3"].zone = ZONE:New("h3_packup")
 
+whouse.tabqa = WAREHOUSE:New(STATIC:FindByName("tabqa"),"Tabqa")
+whouse.tabqa:SetAutoDefenceOn()
+whouse.tabqa:SetSpawnZone(ZONE:New("tabqa_packup"))
+whcoord["tabqa"] = {}
+whcoord["tabqa"].coord = COORDINATE:New()
+whcoord["tabqa"].zone = ZONE:New("tabqa_packup")
+
+whouse.tiyas = WAREHOUSE:New(STATIC:FindByName("tiyas"),"Tiyas")
+whouse.tiyas:SetAutoDefenceOn()
+whouse.tiyas:SetSpawnZone(ZONE:New("tiyas_packup"))
+whcoord["tiyas"] = {}
+whcoord["tiyas"].coord = COORDINATE:New()
+whcoord["tiyas"].zone = ZONE:New("tiyas_packup")
+
+
+-- these are the farp ones
+whouse.farp1 = nil
+whouse.farp2 = nil
+whouse.farp3 = nil
+whcoord["farp1"] = {}
+whcoord["farp1"].coord = COORDINATE:New()
+whcoord["farp1"].zone = nil
+whcoord["farp2"] = {}
+whcoord["farp2"].coord = COORDINATE:New()
+whcoord["farp2"].zone = nil
+whcoord["farp3"] = {}
+whcoord["farp3"].coord = COORDINATE:New()
+whcoord["farp3"].zone = nil
+---
+
 
 whouse.ezor:Start()
 whouse.tanf:Start()
 whouse.palmyra:Start()
 whouse.h3:Start()
+whouse.tabqa:Start()
+whouse.tiyas:Start()
+
 
 ---Return warehouse information
 ---@param _warehouse string warehouse name
@@ -57,6 +90,18 @@ function GETWAREHOUSE(_warehouse)
     elseif _warehouse == "h3" then
         _wh = whouse.h3
         _loc = "h3"
+    elseif _warehouse == "tabqa" then
+        _wh = whouse.tabqa
+        _loc = "tabqa"
+    elseif _warehouse == "farp1" then
+        _wh = whouse.farp1
+        _loc = "farp1"
+    elseif _warehouse == "farp2" then
+        _wh = whouse.farp2
+        _loc = "farp2"
+    elseif _warehouse == "farp3" then
+        _wh = whouse.farp3
+        _loc = "farp3"
     end
     rlog({_wh,_loc})
     return _wh, _loc
