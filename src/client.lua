@@ -42,17 +42,17 @@ function RGCLIENT:CreateMenu(_client)
     end
 end
 
-function self:OnEventPlayerEnterUnit(EventData)
-    BASE:E({EventData})
+function RGCLIENT:OnEventPlayerEnterUnit(EventData)
+    BASE:E({"RGCLIENT-OnEventPlayerEnterUnit", EventData})
 end
 
-function self:OnEventPlayerEnterAircraft(EventData)
-    BASE:E({EventData})
+function RGCLIENT:OnEventPlayerEnterAircraft(EventData)
+    BASE:E({"RGCLIENT-OnEventPlayerEnterAircraft", EventData})
 end
-function self:SendROE(_Client)
+function RGCLIENT:SendROE(_Client)
     MESSAGE:New(self.roe,60,"Server Info"):ToClient(_Client)
 end
 
-function self:SendMOTD(_Client)
+function RGCLIENT:SendMOTD(_Client)
     MESSAGE:New(self.motd,60,"Server Info"):ToClient(_Client)
 end

@@ -244,7 +244,7 @@ function hevent:OnEventMarkRemoved(EventData)
       self:warehousedeploy(text,text2,coord,_playername,_group,_coalition)
     elseif mainkey == "-transfer" then
       self:warehousetransfer(text,text2,_playername,_group,_coalition)
-    elseif mainkey == "-whcheck" then
+    elseif mainkey == "-whcheck" or mainkey == "wcheck" or mainkey == "-stock" then
       self:warehousecheck(text,text2,_playername,_coalition)
     elseif mainkey == "-storeassets" then
       self:warehousestore(text,text2,_group,_coalition)
@@ -369,10 +369,7 @@ end
 function hevent:warehousecheck(_text,_text2,_group,_col)
   local keywords = UTILS.Split(_text2,",")
   local _warehouse = nil
-  local _towarehouse = nil
-  local _unittype = nil
-  local _specifictype = nil
-  local _amount = 0
+  local _type = nil
   self:E({keywords})
   -- get our information so we can work out what we are doing.
   -- currently only 1 'command' exists, route
@@ -383,27 +380,8 @@ function hevent:warehousecheck(_text,_text2,_group,_col)
     if key:lower() == "w" or key:lower() == "warehouse" or key:lower() == "in" or key:lower() == "at" or key:lower() == "from" then
       _warehouse = val:lower()
     end
-    if key:lower() == "attrib" or key:lower() == "a" then
-      if val:lower() == "armor" or val:lower() == "armour" or val:lower() == "tank" or val:lower() == "tanks" then
-        _unittype = WAREHOUSE.Attribute.GROUND_TANK
-      elseif val:lower() == "apc" or val:lower() == "ifv" then 
-        _unittype = WAREHOUSE.Attribute.GROUND_APC
-      elseif val:lower() == "infantry" or val:lower() == "troops" then
-        _unittype = WAREHOUSE.Attribute.GROUND_INFANTRY
-      elseif val:lower() == "aaa" then
-        _unittype = WAREHOUSE.Attribute.GROUND_AAA
-      elseif val:lower() == "art" or val:lower() == "artillary"then
-        _unittype = WAREHOUSE.Attribute.GROUND_ARTILLERY
-      elseif val:lower() == "sam" then
-        _unittype = WAREHOUSE.Attribute.GROUND_SAM
-      elseif val:lower() == "truck" then
-        _unittype = WAREHOUSE.Attribute.GROUND_TRUCK
-      elseif val:lower() == "other" then
-        _unittype = WAREHOUSE.Attribute.GROUND_OTHER
-      end
-    end
-    if key:lower() == "type" or key:lower() == "t" then
-      _specifictype = val
+    if key:lower() == "attrib" or key:lower() == "a" or key:lower() == "type" or key:lower() == "t" then
+      _type = val:lower()
     end
   end
   -- ok lets check our values if w, t or n are nil then we send a message telling the player to fix their shit
@@ -412,11 +390,11 @@ function hevent:warehousecheck(_text,_text2,_group,_col)
     self:msg("Your request for units can not be processed, you didn't include a valid warehouse \n the command is for unit by attribute: -deploy,w=warehousename,a=type,n=amount,r=xxxx,d=warehousename were r can be route or transfer and d is only required if transfering \n or for unit by specific type -deploy,w=warehousename,t=Unittype,n=amount,r=xxx,d=warehousename",_group,30)
     return false
   end
-  if _unittype == nil and _specifictype == nil then
-    self:msg("Your request for units can not be processed, you didn't include a valid attribute type or you failed to include a specific unit type, valid types (,a=xxxx) are armor,apc,ifv,infantry,troops,aaa,sam,art,truck or other for attribute type or the dcs name type for unit type (t=SA-15)",_group,30)
+  if _type == nil then
+    self:msg("Your request for units can not be processed, you didn't include a type",_group,30)
     return false
   end
-  WAREHOUSEAMOUNTS(_group,_warehouse,_unittype,_specifictype,_col)
+  WAREHOUSESTOCKCHECK(_group,_warehouse,_type,_col)
 end
 
 --- handles our warehouse transfer requests
@@ -1305,7 +1283,7 @@ function hevent:newhandlespawn(text,coord,_group,_playername)
       else
         BASE:E({"UNIT HEADING ACTUALLY WAS NIL WAS",heading})
       end
-      BASE:E({"Spawning:",u,side,ran,heading})
+      BASE:E({"Spawning:",unit,side,ran,heading})
       sp = sp:SpawnFromCoordinate(coord)
       table.insert(self.spawnedgroup,sp)
     else

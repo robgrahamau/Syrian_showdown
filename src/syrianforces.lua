@@ -36,51 +36,38 @@ end
 
 
 
-EZORFACTORY = RGFactory:New("Ez-Zor Factory","hl zu23",1,(60*60*24*3.5),(60*60*24*4),true,1)
-EZORFACTORY:AddParts(197492779,"hanger")
-EZORFACTORY:AddParts(118065130,"hanger")
-EZORFACTORY:AddParts(197492772,"industrial")
-EZORFACTORY:AddParts(197492805,"industrial")
-EZORFACTORY:AddParts(118065223,"hanger")
+SYRIA.Factories.EZORFACTORY = RGFactory:New("Ez-Zor Factory","hl zu23",1,(60*60*24*3.5),(60*60*24*4),true,1)
+SYRIA.Factories.EZORFACTORY:AddParts(197492779,"hanger")
+SYRIA.Factories.EZORFACTORY:AddParts(118065130,"hanger")
+SYRIA.Factories.EZORFACTORY:AddParts(197492772,"industrial")
+SYRIA.Factories.EZORFACTORY:AddParts(197492805,"industrial")
+SYRIA.Factories.EZORFACTORY:AddParts(118065223,"hanger")
 
-EZORFACTORY:AddWarehouse(whouse.ezor)
-EZORFACTORY:enableMarkers(true)
-EZORFACTORY:Start()
+SYRIA.Factories.EZORFACTORY:AddWarehouse(whouse.ezor)
+SYRIA.Factories.EZORFACTORY:enableMarkers(true)
+SYRIA.Factories.EZORFACTORY:Start()
 
-EZORFACTORY1 = RGFactory:New("Ez-zor Factory 1","syrian platoon",1,(60*60*24*2),(60*60*24*4),true,1)
-EZORFACTORY1:AddParts("118065666","hanger")
-EZORFACTORY1:AddParts("197492801","Building")
-EZORFACTORY1:AddParts("197492802","Building")
-EZORFACTORY1:AddParts("197492755","Building")
-EZORFACTORY1:AddWarehouse(whouse.ezor)
-EZORFACTORY1:enableMarkers(true)
-EZORFACTORY1:Start()
-
-
-
-
-
-local prespawnsa10 = CTLD_CARGO:New(nil,"SA10",{"sa10"},CTLD_CARGO.Enum.FOB,true,true,24,nil,false,750,3,"SAM SYSTEMS")
-redctld:InjectVehicles(ZONE:New("sa10"),prespawnsa10)
-redctld:InjectVehicles(Z_PALSA10,prespawnsa10)
-
-
+SYRIA.Factories.EZORFACTORY1 = RGFactory:New("Ez-zor Factory 1","syrian platoon",1,(60*60*24*2),(60*60*24*4),true,1)
+SYRIA.Factories.EZORFACTORY1:AddParts("118065666","hanger")
+SYRIA.Factories.EZORFACTORY1:AddParts("197492801","Building")
+SYRIA.Factories.EZORFACTORY1:AddParts("197492802","Building")
+SYRIA.Factories.EZORFACTORY1:AddParts("197492755","Building")
+SYRIA.Factories.EZORFACTORY1:AddWarehouse(whouse.ezor)
+SYRIA.Factories.EZORFACTORY1:enableMarkers(true)
+SYRIA.Factories.EZORFACTORY1:Start()
 
 -- Ai items -- 
-Ezorplatoon = PLATOON:New("syrian platoon",6,"Ez-zor Infantry")
-Ezorplatoon:AddMissionCapability({AUFTRAG.Type.PATROLZONE},40)
+SYRIA.Platoons.EZORPLATON = PLATOON:New("syrian platoon",6,"Ezzor Infantry")
+SYRIA.Platoons.EZORPLATON:AddMissionCapability({AUFTRAG.Type.PATROLZONE},40)
+SYRIA.Brigades.EZOR = BRIGADE:New("ezZor","Syrian 2nd Brigade")
+SYRIA.Brigades.EZOR:SetSpawnZone(ZONE:New("ezzor_packup"))
+SYRIA.Brigades.EZOR:AddPlatoon(SYRIA.Platoons.EZORPLATON)
+SYRIA.Command = COMMANDER:New(1)
+SYRIA.Command:AddLegion(SYRIA.Brigades.EZOR)
+SYRIA.Command:AddLegion(SYRIA.AirWings.S12thTransport1)
+SYRIA.Command:Start()
 
-EzorBrigade = BRIGADE:New("ezZor","Syrian 2nd Brigade")
-EzorBrigade:SetSpawnZone(ZONE:New("ezzor_packup"))
-EzorBrigade:AddPlatoon(Ezorplatoon)
-
-syriancommander = COMMANDER:New(coalition.side.RED)
-syriancommander:AddLegion(EzorBrigade)
-syriancommander:AddLegion(S12thTransport1)
-
-syriancommander:Start()
-
-function syriancommander:onafterOpsOnMission(From,Event,To,OpsGroup,Mission)
+function SYRIA.Command:onafterOpsOnMission(From,Event,To,OpsGroup,Mission)
     local opsgroup = OpsGroup
     local mission = Mission
     local text = string.format("Group %s is on %s mission %s",opsgroup:GetName(),mission:GetType(),mission:GetName())
@@ -88,10 +75,13 @@ function syriancommander:onafterOpsOnMission(From,Event,To,OpsGroup,Mission)
     env.info(text)
 end
 
-local missionPatrolZone1 = AUFTRAG:NewPATROLZONE(Z_PATROLZONE1)
+local missionPatrolZone1 = AUFTRAG:NewPATROLZONE(Z_PATROLZONE1,30)
 missionPatrolZone1:SetRequiredAssets(2)
 missionPatrolZone1:SetRequiredTransport(Z_PATROLZONE1,1,3)
 missionPatrolZone1:SetRepeatOnFailure(1000)
 missionPatrolZone1:SetRepeatOnSuccess(1000)
 
-syriancommander:AddMission(missionPatrolZone1)
+SYRIA.Command:AddMission(missionPatrolZone1)
+
+
+

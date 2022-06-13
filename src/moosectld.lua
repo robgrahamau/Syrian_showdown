@@ -78,5 +78,10 @@ redctld:AddCratesRepair("SA2 Repair","sa2",CTLD_CARGO.Enum.REPAIR,6,500,30,"Repa
 redctld:AddCTLDZone("tanf",CTLD.CargoZoneType.LOAD,SMOKECOLOR.Blue,false,false)
 redctld:AddCTLDZone("palmyra",CTLD.CargoZoneType.LOAD,SMOKECOLOR.Blue,true,false)
 redctld:AddCTLDZone("ezor",CTLD.CargoZoneType.LOAD,SMOKECOLOR.Blue,true,false)
+BASE:E({"Injecting red CTLD"})
+prespawnsa10 = CTLD_CARGO:New(nil,"SA10",{"sa10"},CTLD_CARGO.Enum.FOB,true,true,24,nil,false,750,3,"SAM SYSTEMS")
+redctld:InjectVehicles(ZONE:New("sa10"),prespawnsa10)
+redctld:InjectVehicles(Z_PALSA10,prespawnsa10)
+
 
 env.info("moosectld.lua end")

@@ -1,7 +1,7 @@
 -- Important Globals go here
 env.info("TGW Syria By Robert Graham Initialising.")
-_VERSION = 0.28
-_LASTUPDATE = "12/06/2022"
+_VERSION = 0.29
+_LASTUPDATE = "13/06/2022"
 _DEBUG = true
 _PASSWORD = "test"
 ADMINPASSWORD2 = "testing"
@@ -27,7 +27,22 @@ NOWDAY = nil
 NOWHOUR = nil
 NOWMINUTE = nil
 NOWSEC = nil
+US = {} -- holds our forces
+US.AirWings = {}
+US.Squadrons = {}
+US.Brigades = {}
+US.Platoons = {}
+US.Flotilla = {}
+US.Fleet = {}
 
+SYRIA = {} -- holds our forces
+SYRIA.AirWings = {}
+SYRIA.Squadrons = {}
+SYRIA.Brigades = {}
+SYRIA.Platoons = {}
+SYRIA.Flotilla = {}
+SYRIA.Fleet = {}
+SYRIA.Factories = {}
 
 function rlog(_val)
     RGUTILS.log(_val)
@@ -68,6 +83,7 @@ end
 
 _loadfile("moose.lua",_SRCPATH)
 _loadfile("mist.lua",_SRCPATH)
+_loadfile("constants.lua",_SRCPATH)
 _loadfile("stts.lua",_SRCPATH)
 timeupdate = TIMER:New(function() RGUTILS:updatetime() end)
 timeupdate:Start(nil,1)
@@ -76,6 +92,7 @@ if _USEHYPEMAN then
     _HMLOADED = true
 end
 _loadfile("zones.lua",_SRCPATH)
+_loadfile("missioncommands.lua",_SRCPATH)
 _loadfile("eventhandler.lua",_SRCPATH)
 _loadfile("unitspawner.lua",_SRCPATH)
 _loadfile("farpcreator.lua",_SRCPATH)
@@ -87,6 +104,8 @@ _loadfile("factory.lua",_SRCPATH)
 _loadfile("transporters.lua",_SRCPATH)
 _loadfile("groundintel.lua",_SRCPATH)
 _loadfile("carrier.lua",_SRCPATH)
+_loadfile("client.lua",_SRCPATH)
+
 
 _loadfile("syrianairwings.lua",_SRCPATH)
 _loadfile("coalitionairwings.lua",_SRCPATH)

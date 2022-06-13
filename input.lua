@@ -1,8 +1,11 @@
 env.info("input.lua")
-temp = GROUP:FindByName("ghostpad 1#001")
-tctemp = temp:GetCoordinate()
+rlog({"Get # assets",whouse.ezor:GetNumberOfAssets(WAREHOUSE.Descriptor.GROUPNAME, "t72b")})
+--rlog({"WH TEST",whouse.ezor:GetStockInfo(stock)})
+_blookup = MISTEMP.BLUE.INFANTRY
+for k,v in pairs(_blookup) do
+    rlog({"_blookup k,v",k,v})        
 
-tctemp:MarkToAll("HEY HERE")
+end
 
 
 env.info("input.lua end")

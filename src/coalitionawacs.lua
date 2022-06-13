@@ -1,4 +1,4 @@
-WESTAWACS = AWACS:New("West Awacs",USAW380,"blue",AIRBASE.Syria.Akrotiri,"LCD03",Z_FEZWEST,"ELVIS",255,radio.modulation.AM)
+WESTAWACS = AWACS:New("West Awacs",US.AirWings.USAW380,"blue",AIRBASE.Syria.Akrotiri,"LCD03",Z_FEZWEST,"ELVIS",255,radio.modulation.AM)
 WESTAWACS:SetEscort(2)
 WESTAWACS:SetAwacsDetails(CALLSIGN.AWACS.Magic,1,32,RGUTILS.CalculateTAS(32000,240,0),090,25)
 WESTAWACS:SetSRS(_SRSPATH,"Female","US-EN",5002)
@@ -11,7 +11,7 @@ WESTAWACS.AllowMarkers = true
 WESTAWACS:__Start(7)
 
 
-CARRIERAWACS = AWACS:New("CAW9 AWACS",USCAW9,"blue","AbeLinc","GOOSE",Z_FEZSOUTH,"RENO",256,radio.modulation.AM)
+CARRIERAWACS = AWACS:New("CAW9 AWACS",US.AirWings.USCAW9,"blue","AbeLinc","GOOSE",Z_FEZSOUTH,"RENO",256,radio.modulation.AM)
 CARRIERAWACS:SetEscort(2)
 CARRIERAWACS:SetAwacsDetails(CALLSIGN.AWACS.Overlord,1,26,RGUTILS.CalculateTAS(26,250,0),040,25)
 CARRIERAWACS:SetRejectionZone(Z_SYRIANAS)

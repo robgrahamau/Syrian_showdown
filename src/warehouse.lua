@@ -186,6 +186,92 @@ function whouse.tanf:OnAfterSelfRequest(From,Event,To,groupset,request)
     end    
 end
 
+
+---OnAfterSelfRequest
+---@param From any
+---@param Event Event
+---@param To any
+---@param groupset SET_GROUP
+---@param request string
+function whouse.h3:OnAfterSelfRequest(From,Event,To,groupset,request)
+    -- lets grab our request
+    local assignmnet = whouse.tanf:GetAssignment(request)
+    if assignmnet == "To Coordinate" then
+        for _,_group in pairs(groupset:GetSet()) do
+            local _ToCoord = whcoord["tanf"].coord
+            _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
+        end
+    end    
+end
+
+---OnAfterSelfRequest
+---@param From any
+---@param Event Event
+---@param To any
+---@param groupset SET_GROUP
+---@param request string
+function whouse.tabqa:OnAfterSelfRequest(From,Event,To,groupset,request)
+    -- lets grab our request
+    local assignmnet = whouse.tanf:GetAssignment(request)
+    if assignmnet == "To Coordinate" then
+        for _,_group in pairs(groupset:GetSet()) do
+            local _ToCoord = whcoord["tanf"].coord
+            _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
+        end
+    end    
+end
+
+---OnAfterSelfRequest
+---@param From any
+---@param Event Event
+---@param To any
+---@param groupset SET_GROUP
+---@param request string
+function whouse.tiyas:OnAfterSelfRequest(From,Event,To,groupset,request)
+    -- lets grab our request
+    local assignmnet = whouse.tanf:GetAssignment(request)
+    if assignmnet == "To Coordinate" then
+        for _,_group in pairs(groupset:GetSet()) do
+            local _ToCoord = whcoord["tanf"].coord
+            _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
+        end
+    end    
+end
+
+
+function buildselfrequests()
+    for k,v in pairs(whouse) do
+        BASE:E({"KEY IS:",k,"V is",v})
+        if v ~= nil then
+            
+            function v:OnAfterDefeated(From, Event, To)
+                local txt = string.format("Warning warehouse %s has repelled its attackers", v.alias)
+                MessageToAll(txt,30)
+            end
+            function v:OnAfterAttacked(From, Event, To, Coalition, Country)
+                local txt = string.format("Warning warehouse %s is under attack", v.alias)
+                if Coalition == 1 then
+                    MessageToBlue(txt,30)
+                else
+                    MessageToRed(txt,30)
+                end
+            end
+
+            function v:OnAfterSelfRequest(From,Event,To,groupset,request)
+                -- lets grab our request
+                local assignmnet = whouse.tanf:GetAssignment(request)
+                if assignmnet == "To Coordinate" then
+                    for _,_group in pairs(groupset:GetSet()) do
+                        local _ToCoord = whcoord["tanf"].coord
+                        _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
+                    end
+                end
+            end
+
+        end
+    end
+end
+
 ---Sends a warehouse request to the system
 ---@param _asset WAREHOUSE.Attribute
 ---@param _specifictype string DCS GROUP NAME
@@ -265,6 +351,22 @@ end
 function WAREHOUSEHANDLER(_group,_warehouse,_unittype,_specifictype,_amount,_requesttype,_coordinate,_col)
     rlog({"WAREHOUSEHANDLER:",_group,_warehouse,_unittype,_specifictype,_amount,_requesttype,_towarehouse,_col})
     local checker = RGUTILS.groupchecker()
+    if _unittype ~= nil then
+        local _exists = GROUP:FindByName(_unittype)
+        if _exists == nil then
+            local _tmsg = string.format("Unable to Process request as unit type %s that was requested does not exist",_unittype)
+            if _group == nil then
+                if _col == 1 then             
+                    MessageToRed(_tmsg,30)
+                else
+                    MessageToBlue(_tmsg,30)
+                end
+            else
+                MessageToGroup(_group,_tmsg,30)
+            end
+            return false
+        end
+    end
     if _col == 1 then
         local afterspawncount = checker.redunits + (_amount * 4)
         if checker.redunits > REDUNITLIMIT or afterspawncount > REDUNITLIMIT then
@@ -309,6 +411,22 @@ end
 function WAREHOUSETRANSFER(_group,_warehouse,_unittype,_specifictype,_amount,_towarehouse,_transporttype,_transportamount,_col)
     rlog({"WAREHOUSEHANDLER:",_group,_warehouse,_unittype,_specifictype,_amount,_requesttype,_towarehouse,_col})
     local checker = RGUTILS.groupchecker()
+    if _unittype ~= nil then
+        local _exists = GROUP:FindByName(_unittype)
+        if _exists == nil then
+            local _tmsg = string.format("Unable to Process request as unit type %s that was requested does not exist",_unittype)
+            if _group == nil then
+                if _col == 1 then             
+                    MessageToRed(_tmsg,30)
+                else
+                    MessageToBlue(_tmsg,30)
+                end
+            else
+                MessageToGroup(_group,_tmsg,30)
+            end
+            return false
+        end
+    end
     if _col == 1 then
         local afterspawncount = checker.redunits + (_amount * 4)
         if checker.redunits > REDUNITLIMIT or afterspawncount > REDUNITLIMIT then
@@ -373,7 +491,15 @@ function WAREHOUSEPACKUP(_group,_warehouse,_col)
             end)
         end
     else
-        MessageToGroup(_group,"Unable to put troops into that warehouse you don't own it",30)
+        if _group ~= nil then
+            MessageToGroup(_group,"Unable to put troops into that warehouse you don't own it",30)
+        else
+            if _col == 1 then
+                MessageToRed("Unable to put those groups into that warehouse asa its not owned by the right coalition",30)
+            else
+                MessageToBlue("Unable to put those groups into that warehouse asa its not owned by the right coalition",30)
+            end
+        end
     end
 end
 
@@ -382,10 +508,86 @@ end
 ---@param warehouse string
 ---@param _type string dcs group name
 ---@param _col int 0 = neutral, 1 = red, 2 = blue
-function WAREHOUSESTOCKCHECK(_group,warehouse,_type,_col)
+function WAREHOUSESTOCKCHECK(_group,_warehouse,_type,_col)
     _wh,_loc = GETWAREHOUSE(_warehouse)
+    local _blookup = nil
+    local _rlookup = nil
+    local msg = ""
+    if _type == "infantry" or _type == "inf" or _type == "troops" then
+        _blookup = MISTEMP.BLUE.INFANTRY
+        _rlookup = MISTEMP.RED.INFANTRY
+    end
+    if _type == "ifv" or _type == "apc" or _type == "carrier" then
+        _blookup = MISTEMP.BLUE.IFV
+        _rlookup = MISTEMP.RED.IFV
+    end
+    if _type == "tank" or _type == "armour" or _type == "armor" then
+        _blookup = MISTEMP.BLUE.ARMOUR
+        _rlookup = MISTEMP.RED.ARMOUR
+    end
+    if _type == "aaa" or _type == "antiair" or _type == "anti-air" then
+        _blookup = MISTEMP.BLUE.AAA
+        _rlookup = MISTEMP.RED.AAA
+    end
+    if _type == "sam" or _type == "mobile sam" or _type == "surface to air missile" then
+        _blookup = MISTEMP.BLUE.MOBILESAM
+        _rlookup = MISTEMP.RED.MOBILESAM
+    end
+    if _type == "art" or _type == "artilery" or _type == "arty" then
+        _blookup = MISTEMP.BLUE.ART
+        _rlookup = MISTEMP.RED.ART
+    end
+    if _type == "truck" or _type == "unarmed" or _type == "logistic" or _type == "logi" then
+        _blookup = MISTEMP.BLUE.UNARMED
+        _rlookup = MISTEMP.RED.UNARMED
+    end
+    if _type == "heli" or _type == "helicopter" or _type == "chopper" then
+        _blookup = MISTEMP.BLUE.HELICOPTER
+        _rlookup = MISTEMP.RED.HELICOPTER
+    end
+    if _wh:GetCoalition() ~= _col then
+        local msg1 = string.format("Unable to list contents of %s you don't own that warehouse.",_warehouse)
+        if _group == nil then
+            if _col == 1 then
+                MessageToRed(msg1,30)
+                return
+            else
+                MessageToBlue(msg1,30)
+                return
+            end
+        else
+            MessageToGroup(_group,msg1,30)
+            return
+        end
+    end
+    if _blookup == nil or _rlookup == nil then
+        return
+    end
+    local msgtxt = string.format("WAREHOUSE STOCK INFORMATION FOR %s of TYPE %s",_warehouse,_type)
+    msgtxt = string.format("%s \n Coalition Produced Units",msgtxt)
+    for k,v in pairs(_blookup) do
+        local tname = v
+        local wamount = _wh:GetNumberOfAssets(WAREHOUSE.Descriptor.GROUPNAME, v)
+        local mtxt = string.format("Type: %s | Amount: %d",tname,wamount)
+        msgtxt = string.format("%s \n %s ",msgtxt,mtxt)
+    end
+    msgtxt = string.format("%s \n Russian & Chinese Produced Units",msgtxt)
+    for k,v in pairs(_rlookup) do 
+        local tname = v
+        local wamount = _wh:GetNumberOfAssets(WAREHOUSE.Descriptor.GROUPNAME, v)
+        local mtxt = string.format("Type: %s | Amount: %d",tname,wamount)
+        msgtxt = string.format("%s \n %s ",msgtxt,mtxt)
+    end
+    if _group ~= nil then
+        MessageToGroup(_group,msgtxt,60,"Warehouse Info")
+    else
+        if _col == 1 then
+            MessageToRed(msgtxt,60,"Warehouse Info")
+        else
+            MessageToBlue(msgtxt,60,"Warehouse Info")
+        end
 
-
+    end
 end
-
+buildselfrequests()
 env.info("hound.lua end")
