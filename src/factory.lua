@@ -176,7 +176,10 @@ end
 ---@param _txt string
 function RGFactory:UpdateMarkerText(_txt)
     rlog("Marker Update")
-    self.marker:UpdateText(_txt)
+    self.marker:Remove()
+    local mp = Object.getPoint(self.coreobject)
+    local tcoord = COORDINATE:NewFromVec3(mp)
+    MARKER:New(tcoord,"_txt"):ToCoalition(self.coalition)
     rlog({"marked should be updated with ",_txt})
 end
 

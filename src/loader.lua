@@ -1,11 +1,11 @@
 -- Important Globals go here
 env.info("TGW Syria By Robert Graham Initialising.")
-_VERSION = 0.29
-_LASTUPDATE = "13/06/2022"
+_VERSION = 0.30
+_LASTUPDATE = "14/06/2022"
 _DEBUG = true
 _PASSWORD = "test"
 ADMINPASSWORD2 = "testing"
-trigger.action.setUserFlag("SSB",100)
+trigger.action.setUserFlag("SSB",000)
 _SRCPATH = lfs.writedir() .."syria\\src\\"
 _PERSISTANCEPATH= lfs.writedir() .. "syria\\"
 _SRSPATH = "D:\\DCS-SimpleRadio-Standalone\\"

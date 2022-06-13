@@ -38,7 +38,7 @@ Elint_blue:setMarkerType(HOUND.MARKER.POLYGON)
 Elint_blue:enableMarkers()
 Elint_blue:enableBDA()
 -- Elint_blue:enableController()
-Elint_blue:systemOn()
+-- Elint_blue:systemOn()
 
 bluectld:InjectVehicles(Z_H3PAT,CTLD_CARGO:New(nil,"Patriot",{"patriot"},CTLD_CARGO.Enum.FOB,true,true,24,nil,false,750,3,"SAM SYSTEMS"))
 COALITIONFARPCONTROL = FARPCREATOR:New("Tanf Control","Super","Convoytemplate","servicevehicletemplate",country.id.USA)
@@ -50,3 +50,5 @@ COALITIONFARPCONTROL:Start()
 
 
 TANKERMISSION(Z_IDAKU:GetCoordinate(),30000,RGUTILS.CalculateTAS(30000,315,0),180,35,0,US.AirWings.USAW380,300,(60*60*3),250,radio.modulation.AM,62,"SHL")
+TANKERMISSION(Z_IDAKU:GetCoordinate(),20000,RGUTILS.CalculateTAS(20000,240,0),090,35,0,US.AirWings.USAW380,300,(60*60*3),250,radio.modulation.AM,62,"SH3")
+TANKERMISSION(Z_GOOSE:GetCoordinate(),27000,RGUTILS.CalculateTAS(27000,275,0),090,35,1,US.AirWings.USAW380,300,(60*60*3),250,radio.modulation.AM,62,"AR2")

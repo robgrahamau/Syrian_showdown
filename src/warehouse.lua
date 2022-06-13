@@ -129,121 +129,12 @@ function ADDTOWAREHOUSE(_asset,_amount,_warehouse,_attribute,_cargohold,_weight,
     _warehouse:AddAsset(_asset,_amount,_attribute,_cargohold,_weight,_load,_skill,_liveries,_assignment)
 end
 
----OnAfterSelfRequest
----@param From any
----@param Event Event
----@param To any
----@param groupset SET_GROUP
----@param request string
-function whouse.ezor:OnAfterSelfRequest(From,Event,To,groupset,request)
-    -- lets grab our request
-    local assignmnet = whouse.ezor:GetAssignment(request)
-    local stimer = 1
-    if assignmnet == "To Coordinate" then
-        for _,_group in pairs(groupset:GetSet()) do
-            
-            SCHEDULER:New(nil,function() 
-            local _ToCoord = whcoord["ezor"].coord
-
-            _group:RouteGroundOnRoad(_ToCoord:GetRandomCoordinateInRadius((200+(stimer/4)), (stimer/4)), _group:GetSpeedMax()*0.8)
-            end,{},stimer)
-            stimer = stimer + 20
-        end
-    end    
-end
-
----OnAfterSelfRequest
----@param From any
----@param Event Event
----@param To any
----@param groupset SET_GROUP
----@param request string
-function whouse.palmyra:OnAfterSelfRequest(From,Event,To,groupset,request)
-    -- lets grab our request
-    local assignmnet = whouse.palmyra:GetAssignment(request)
-    if assignmnet == "To Coordinate" then
-        for _,_group in pairs(groupset:GetSet()) do
-            local _ToCoord = whcoord["palmyra"].coord
-            _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
-        end
-    end    
-end
-
----OnAfterSelfRequest
----@param From any
----@param Event Event
----@param To any
----@param groupset SET_GROUP
----@param request string
-function whouse.tanf:OnAfterSelfRequest(From,Event,To,groupset,request)
-    -- lets grab our request
-    local assignmnet = whouse.tanf:GetAssignment(request)
-    if assignmnet == "To Coordinate" then
-        for _,_group in pairs(groupset:GetSet()) do
-            local _ToCoord = whcoord["tanf"].coord
-            _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
-        end
-    end    
-end
-
-
----OnAfterSelfRequest
----@param From any
----@param Event Event
----@param To any
----@param groupset SET_GROUP
----@param request string
-function whouse.h3:OnAfterSelfRequest(From,Event,To,groupset,request)
-    -- lets grab our request
-    local assignmnet = whouse.h3:GetAssignment(request)
-    if assignmnet == "To Coordinate" then
-        for _,_group in pairs(groupset:GetSet()) do
-            local _ToCoord = whcoord["h3"].coord
-            _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
-        end
-    end    
-end
-
----OnAfterSelfRequest
----@param From any
----@param Event Event
----@param To any
----@param groupset SET_GROUP
----@param request string
-function whouse.tabqa:OnAfterSelfRequest(From,Event,To,groupset,request)
-    -- lets grab our request
-    local assignmnet = whouse.tabqa:GetAssignment(request)
-    if assignmnet == "To Coordinate" then
-        for _,_group in pairs(groupset:GetSet()) do
-            local _ToCoord = whcoord["tabqa"].coord
-            _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
-        end
-    end    
-end
-
----OnAfterSelfRequest
----@param From any
----@param Event Event
----@param To any
----@param groupset SET_GROUP
----@param request string
-function whouse.tiyas:OnAfterSelfRequest(From,Event,To,groupset,request)
-    -- lets grab our request
-    local assignmnet = whouse.tiyas:GetAssignment(request)
-    if assignmnet == "To Coordinate" then
-        for _,_group in pairs(groupset:GetSet()) do
-            local _ToCoord = whcoord["tiyas"].coord
-            _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
-        end
-    end    
-end
 
 
 function buildselfrequests()
     for k,v in pairs(whouse) do
         BASE:E({"KEY IS:",k,"V is",v})
         if v ~= nil then
-            
             function v:OnAfterDefeated(From, Event, To)
                 local txt = string.format("Warning warehouse %s has repelled its attackers", v.alias)
                 MessageToAll(txt,30)
@@ -257,17 +148,26 @@ function buildselfrequests()
                 end
             end
 
+            ---OnAfterSelfRequest
+            ---@param From any
+            ---@param Event Event
+            ---@param To any
+            ---@param groupset SET_GROUP
+            ---@param request string
             function v:OnAfterSelfRequest(From,Event,To,groupset,request)
                 -- lets grab our request
                 local assignmnet = v:GetAssignment(request)
+                local stimer = 1
                 if assignmnet == "To Coordinate" then
                     for _,_group in pairs(groupset:GetSet()) do
+                        SCHEDULER:New(nil,function() 
                         local _ToCoord = whcoord[v.alias].coord
-                        _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
+                        _group:RouteGroundOnRoad(_ToCoord:GetRandomCoordinateInRadius((200+(stimer/4)), (stimer/4)), _group:GetSpeedMax()*0.8)
+                        end,{},stimer)
+                        stimer = stimer + 20
                     end
-                end
+                end    
             end
-
         end
     end
 end

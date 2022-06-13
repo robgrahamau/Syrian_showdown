@@ -1,5 +1,6 @@
 Z_IDAKU = ZONE:New("IDAKU")
 Z_ELVIS = ZONE:New("ELVIS")
+Z_GOOSE = ZONE:New("GOOSE")
 Z_SA10 = ZONE:New("sa10")
 Z_PALSA10 = ZONE:New("palmyrasa10")
 Z_H3PAT = ZONE:New("h3north_patriot")

@@ -620,7 +620,7 @@ function hevent:groupchecker()
       gn = gn + 1
     end
   end)
-  MESSAGE:New(String.format("Current Group Count is: %d Active Groups, \n • Blue Groups: %d , Red Groups: %d , Neutral Groups: %d \n Unit Count is: %d Units \n • Blue Units: %d , Red Units: %d , Neutral Units: %d ",gcounter,gb,gr,gn,ucounter,ub,ur,un),30):ToAll()
+  MESSAGE:New(string.format("Current Group Count is: %d Active Groups, \n • Blue Groups: %d , Red Groups: %d , Neutral Groups: %d \n Unit Count is: %d Units \n • Blue Units: %d , Red Units: %d , Neutral Units: %d ",gcounter,gb,gr,gn,ucounter,ub,ur,un),30):ToAll()
 end
 
 ---random spawn command
