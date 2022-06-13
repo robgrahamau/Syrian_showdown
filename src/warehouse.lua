@@ -4,42 +4,42 @@ whouse = {}
 whcoord = {}
 
 
-whouse.ezor = WAREHOUSE:New(STATIC:FindByName("ezZor"), "Deir ez-Sor")
+whouse.ezor = WAREHOUSE:New(STATIC:FindByName("ezZor"), "ezor")
 whouse.ezor:SetAutoDefenceOn()
 whouse.ezor:SetSpawnZone(ZONE:New("ezzor_packup"))
 whcoord["ezor"] = {}
 whcoord["ezor"].coord = COORDINATE:New()
 whcoord["ezor"].zone = ZONE:New("ezzor_packup")
 
-whouse.tanf = WAREHOUSE:New(STATIC:FindByName("tanf"), "Tanf")
+whouse.tanf = WAREHOUSE:New(STATIC:FindByName("tanf"), "tanf")
 whouse.tanf:SetAutoDefenceOn()
 whouse.tanf:SetSpawnZone(ZONE:New("tanf_packup"))
 whcoord["tanf"] = {}
 whcoord["tanf"].coord = COORDINATE:New()
 whcoord["tanf"].zone = ZONE:New("tanf_packup")
 
-whouse.palmyra = WAREHOUSE:New(STATIC:FindByName("palmyra"),"Palmyra")
+whouse.palmyra = WAREHOUSE:New(STATIC:FindByName("palmyra"),"palmyra")
 whouse.palmyra:SetAutoDefenceOn()
 whouse.palmyra:SetSpawnZone(ZONE:New("palmyra_packup"))
 whcoord["palmyra"] = {}
 whcoord["palmyra"].coord = COORDINATE:New()
 whcoord["palmyra"].zone = ZONE:New("palmyra_packup")
 
-whouse.h3 = WAREHOUSE:New(STATIC:FindByName("h3"),"H3")
+whouse.h3 = WAREHOUSE:New(STATIC:FindByName("h3"),"h3")
 whouse.h3:SetAutoDefenceOn()
 whouse.h3:SetSpawnZone(ZONE:New("h3_packup"))
 whcoord["h3"] = {}
 whcoord["h3"].coord = COORDINATE:New()
 whcoord["h3"].zone = ZONE:New("h3_packup")
 
-whouse.tabqa = WAREHOUSE:New(STATIC:FindByName("tabqa"),"Tabqa")
+whouse.tabqa = WAREHOUSE:New(STATIC:FindByName("tabqa"),"tabqa")
 whouse.tabqa:SetAutoDefenceOn()
 whouse.tabqa:SetSpawnZone(ZONE:New("tabqa_packup"))
 whcoord["tabqa"] = {}
 whcoord["tabqa"].coord = COORDINATE:New()
 whcoord["tabqa"].zone = ZONE:New("tabqa_packup")
 
-whouse.tiyas = WAREHOUSE:New(STATIC:FindByName("tiyas"),"Tiyas")
+whouse.tiyas = WAREHOUSE:New(STATIC:FindByName("tiyas"),"tiyas")
 whouse.tiyas:SetAutoDefenceOn()
 whouse.tiyas:SetSpawnZone(ZONE:New("tiyas_packup"))
 whcoord["tiyas"] = {}
@@ -195,10 +195,10 @@ end
 ---@param request string
 function whouse.h3:OnAfterSelfRequest(From,Event,To,groupset,request)
     -- lets grab our request
-    local assignmnet = whouse.tanf:GetAssignment(request)
+    local assignmnet = whouse.h3:GetAssignment(request)
     if assignmnet == "To Coordinate" then
         for _,_group in pairs(groupset:GetSet()) do
-            local _ToCoord = whcoord["tanf"].coord
+            local _ToCoord = whcoord["h3"].coord
             _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
         end
     end    
@@ -212,10 +212,10 @@ end
 ---@param request string
 function whouse.tabqa:OnAfterSelfRequest(From,Event,To,groupset,request)
     -- lets grab our request
-    local assignmnet = whouse.tanf:GetAssignment(request)
+    local assignmnet = whouse.tabqa:GetAssignment(request)
     if assignmnet == "To Coordinate" then
         for _,_group in pairs(groupset:GetSet()) do
-            local _ToCoord = whcoord["tanf"].coord
+            local _ToCoord = whcoord["tabqa"].coord
             _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
         end
     end    
@@ -229,10 +229,10 @@ end
 ---@param request string
 function whouse.tiyas:OnAfterSelfRequest(From,Event,To,groupset,request)
     -- lets grab our request
-    local assignmnet = whouse.tanf:GetAssignment(request)
+    local assignmnet = whouse.tiyas:GetAssignment(request)
     if assignmnet == "To Coordinate" then
         for _,_group in pairs(groupset:GetSet()) do
-            local _ToCoord = whcoord["tanf"].coord
+            local _ToCoord = whcoord["tiyas"].coord
             _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
         end
     end    
@@ -259,10 +259,10 @@ function buildselfrequests()
 
             function v:OnAfterSelfRequest(From,Event,To,groupset,request)
                 -- lets grab our request
-                local assignmnet = whouse.tanf:GetAssignment(request)
+                local assignmnet = v:GetAssignment(request)
                 if assignmnet == "To Coordinate" then
                     for _,_group in pairs(groupset:GetSet()) do
-                        local _ToCoord = whcoord["tanf"].coord
+                        local _ToCoord = whcoord[v.alias].coord
                         _group:RouteGroundOnRoad(_ToCoord, _group:GetSpeedMax()*0.8)
                     end
                 end
