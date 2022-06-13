@@ -351,7 +351,7 @@ end
 function WAREHOUSEHANDLER(_group,_warehouse,_unittype,_specifictype,_amount,_requesttype,_coordinate,_col)
     rlog({"WAREHOUSEHANDLER:",_group,_warehouse,_unittype,_specifictype,_amount,_requesttype,_towarehouse,_col})
     local checker = RGUTILS.groupchecker()
-    if _unittype ~= nil then
+    if _specifictype ~= nil then
         local _exists = GROUP:FindByName(_unittype)
         if _exists == nil then
             local _tmsg = string.format("Unable to Process request as unit type %s that was requested does not exist",_unittype)
@@ -411,6 +411,22 @@ end
 function WAREHOUSETRANSFER(_group,_warehouse,_unittype,_specifictype,_amount,_towarehouse,_transporttype,_transportamount,_col)
     rlog({"WAREHOUSEHANDLER:",_group,_warehouse,_unittype,_specifictype,_amount,_requesttype,_towarehouse,_col})
     local checker = RGUTILS.groupchecker()
+    if _specifictype ~= nil then
+        local _exists = GROUP:FindByName(_unittype)
+        if _exists == nil then
+            local _tmsg = string.format("Unable to Process request as unit type %s that was requested does not exist",_unittype)
+            if _group == nil then
+                if _col == 1 then             
+                    MessageToRed(_tmsg,30)
+                else
+                    MessageToBlue(_tmsg,30)
+                end
+            else
+                MessageToGroup(_group,_tmsg,30)
+            end
+            return false
+        end
+    end
     if _col == 1 then
         local afterspawncount = checker.redunits + (_amount * 4)
         if checker.redunits > REDUNITLIMIT or afterspawncount > REDUNITLIMIT then
