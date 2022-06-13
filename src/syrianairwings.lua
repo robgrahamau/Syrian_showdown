@@ -17,7 +17,7 @@ SYRIA.AirWings.Abu:SetMarker(false)
 SYRIA.AirWings.Abu:SetAirbase(AIRBASE:FindByName(AIRBASE.Syria.Abu_al_Duhur))
 SYRIA.AirWings.Abu:SetRespawnAfterDestroyed(900)
 SYRIA.AirWings.Abu:SetTakeoffCold()
-SYRIA.AirWings.Abu:_Start(23)
+SYRIA.AirWings.Abu:__Start(23)
 
 SYRIA.Squadrons.S678Sqn = SQUADRON:New("mig23_cap",4,"678 Squadron")
 SYRIA.Squadrons.S678Sqn:AddMissionCapability({AUFTRAG.Type.ALERT5,AUFTRAG.Type.ESCORT,AUFTRAG.Type.INTERCEPT,AUFTRAG.Type.CAP,AUFTRAG.Type.GCICAP},80)
