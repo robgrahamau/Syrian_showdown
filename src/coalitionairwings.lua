@@ -13,7 +13,7 @@ US.AirWings.USCAW9 = AIRWING:New("abew","Carrier Air Wing Nine")
 US.AirWings.USCAW9:SetMarker(false)
 US.AirWings.USCAW9:SetAirbase(AIRBASE:FindByName("AbeLinc"))
 US.AirWings.USCAW9:SetRespawnAfterDestroyed(900)
-US.AirWings.USCAW9:SetTakeoffInAir()
+US.AirWings.USCAW9:SetTakeoffAir()
 US.AirWings.USCAW9:__Start(3)
 
 --#endregion

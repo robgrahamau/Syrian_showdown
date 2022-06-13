@@ -65,7 +65,7 @@ SYRIA.Brigades.EZOR:AddPlatoon(SYRIA.Platoons.EZORPLATON)
 SYRIA.Command = COMMANDER:New(1)
 SYRIA.Command:AddLegion(SYRIA.Brigades.EZOR)
 SYRIA.Command:AddLegion(SYRIA.AirWings.S12thTransport1)
-SYRIA.Commnad:AddLegion(SYRIA.AirWings.Abu)
+SYRIA.Command:AddLegion(SYRIA.AirWings.Abu)
 SYRIA.Command:Start()
 
 function SYRIA.Command:onafterOpsOnMission(From,Event,To,OpsGroup,Mission)

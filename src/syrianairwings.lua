@@ -14,7 +14,7 @@ SYRIA.AirWings.S12thTransport1:__Start(17)
 
 SYRIA.AirWings.Abu = AIRWING:New("abu","Abu Al-Duhur")
 SYRIA.AirWings.Abu:SetMarker(false)
-SYRIA.AirWings.Abu:SetAirbase(AIRABASE:FindByName(AIRBASE.Syria.Abu_al_Duhur))
+SYRIA.AirWings.Abu:SetAirbase(AIRBASE:FindByName(AIRBASE.Syria.Abu_al_Duhur))
 SYRIA.AirWings.Abu:SetRespawnAfterDestroyed(900)
 SYRIA.AirWings.Abu:SetTakeoffCold()
 SYRIA.AirWings.Abu:_Start(23)
