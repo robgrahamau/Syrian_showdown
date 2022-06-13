@@ -6,12 +6,12 @@ _DEBUG = true
 _PASSWORD = "test"
 ADMINPASSWORD2 = "testing"
 trigger.action.setUserFlag("SSB",100)
-_SRCPATH = "syria\\src\\"
-_PERSISTANCEPATH = "syria\\"
+_SRCPATH = lfs.writedir() .."syria\\src\\"
+_PERSISTANCEPATH= lfs.writedir() .. "syria\\"
 _SRSPATH = "D:\\DCS-SimpleRadio-Standalone\\"
 --_SRSPATH = "E:\\DCS-SimpleRadio-Standalone\\"
 _SRSPORT = 5002
-dofile(lfs.writedir() .. _SRCPATH .. "utils.lua")
+dofile( _SRCPATH .. "utils.lua")
 _HMLOADED = false
 _USEHYPEMAN = false
 ADMIN = false
@@ -75,7 +75,7 @@ end
 ---@param path string
 function _loadfile(filename,path)
     rlog({"Attempting to load file",filename,path})    
-    local ran, errorMSG = pcall(function() dofile(lfs.writedir() ..path .. filename) end)
+    local ran, errorMSG = pcall(function() dofile(path .. filename) end)
 		if not ran then
 			rlog({"_loadfile errored ",errorMSG})
 		end
