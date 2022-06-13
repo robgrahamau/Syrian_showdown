@@ -179,7 +179,7 @@ function RGFactory:UpdateMarkerText(_txt)
     self.marker:Remove()
     local mp = Object.getPoint(self.coreobject)
     local tcoord = COORDINATE:NewFromVec3(mp)
-    MARKER:New(tcoord,"_txt"):ToCoalition(self.coalition)
+    MARKER:New(tcoord,_txt):ToCoalition(self.coalition)
     rlog({"marked should be updated with ",_txt})
 end
 

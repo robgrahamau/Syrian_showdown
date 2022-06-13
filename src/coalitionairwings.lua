@@ -25,6 +25,7 @@ US.Squadrons.USVAW117 = SQUADRON:New("OVERLORD1",4,"Wallbangers") -- E2D
 US.Squadrons.USVAW117:AddMissionCapability({AUFTRAG.Type.ORBIT,AUFTRAG.Type.AWACS},100)
 US.Squadrons.USVAW117:SetFuelLowRefuel(0.2)
 US.Squadrons.USVAW117:SetFuelLowRefuel(true)
+US.Squadrons.USWAV117:SetTakeoffAir()
 US.Squadrons.USVAW117:SetTurnoverTime(30,60) -- 30 minutes turn around time after landing to be able to be combat ready again, 60 minutes to repair 1LP
 
 US.Squadrons.USVFA14 = SQUADRON:New("TopHatters",6,"Tophatters") -- F14A135GR
@@ -68,6 +69,7 @@ US.Squadrons.US968SQNAW:AddMissionCapability({AUFTRAG.Type.ORBIT,AUFTRAG.Type.AW
 US.Squadrons.US968SQNAW:SetFuelLowRefuel(true)
 US.Squadrons.US968SQNAW:SetFuelLowThreshold(0.25) 
 US.Squadrons.US968SQNAW:SetTurnoverTime(30,60)
+US.Squadrons.US968SQNAW:SetTakeoffHot()
 
 US.Squadrons.US310SQNTNK = SQUADRON:New("TEXACO",2,"310th Air Refueling Squadron")
 US.Squadrons.US310SQNTNK:AddMissionCapability({AUFTRAG.Type.ORBIT,AUFTRAG.Type.TANKER},100)
@@ -75,6 +77,7 @@ US.Squadrons.US310SQNTNK:SetFuelLowRefuel(true)
 US.Squadrons.US310SQNTNK:SetFuelLowThreshold(0.25)
 US.Squadrons.US310SQNTNK:SetTurnoverTime(30,60)
 US.Squadrons.US310SQNTNK:SetRadio(251,radio.modulation.AM)
+US.Squadrons.US968SQNAW:SetTakeoffHot()
 
 US.Squadrons.US310SQNTNKP = SQUADRON:New("ARC",2,"310th Air Refueling Squadron - Probe")
 US.Squadrons.US310SQNTNKP:AddMissionCapability({AUFTRAG.Type.ORBIT,AUFTRAG.Type.TANKER},100)
@@ -82,6 +85,7 @@ US.Squadrons.US310SQNTNKP:SetFuelLowRefuel(true)
 US.Squadrons.US310SQNTNKP:SetFuelLowThreshold(0.25)
 US.Squadrons.US310SQNTNKP:SetTurnoverTime(30,60)
 US.Squadrons.US310SQNTNKP:SetRadio(251.5,radio.modulation.AM)
+US.Squadrons.US968SQNAW:SetTakeoffHot()
 
 
 
@@ -136,8 +140,8 @@ US.AirWings.USCAW9:NewPayload("BlackKnights",256,{AUFTRAG.Type.CAS,AUFTRAG.Type.
 --#endregion 
 
 --#region navigation points etc for Airwings
-US.AirWings.USAW380:AddPatrolPointTANKER(Z_IDAKU:GetCoordinate(),30000,315,180,40,0)
-US.AirWings.USAW380:AddPatrolPointTANKER(Z_ELVIS:GetCoordinate(),30000,315,180,40,0)
+US.AirWings.USAW380:AddPatrolPointTANKER(Z_IDAKU:GetCoordinate(),30000,RGUTILS.CalculateTAS(30000,315,0),180,40,0)
+US.AirWings.USAW380:AddPatrolPointTANKER(Z_GOOSE:GetCoordinate(),30000,RGUTILS.CalculateTAS(30000,315,0),180,40,1)
 
 
 
