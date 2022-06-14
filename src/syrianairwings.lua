@@ -82,12 +82,3 @@ SYRIA.AirWings.Abu:SetUsingOpsAwacs(SYRAWACS)
 SYRIA.AirWings.Abu:AddPatrolPointCAP(Z_YELTSIN:GetCoordinate(), 26000, RGUTILS.CalculateTAS(26000,300,0), 270, 15)
 SYRIA.AirWings.Abu:AddPatrolPointCAP(Z_YELTSIN:GetCoordinate(), 28000, RGUTILS.CalculateTAS(28000,300,0), 180, 25)
 SYRIA.AirWings.Abu:SetNumberCAP(3)
-
-
-SCHEDULER:New(nil,function() 
-    SYRIA.AirWings.Abu:Save(_PERSISTANCEPATH, "Abu")
-    SYRIA.AirWings.RUSSIA201:Save(_PERSISTANCEPATH, "R201")
-    SYRIA.Squadrons.RUSSIA_2:Save(_PERSISTANCEPATH, "RUSSIA2")
-    SYRIA.Squadrons.RUSSIA_3:Save(_PERSISTANCEPATH, "RUSSIA3")
-    SYRIA.Squadrons.ezormi8transport:Save(_PERSISTANCEPATH, "ezormi8")
-end,{},60,60)

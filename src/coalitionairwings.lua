@@ -25,7 +25,7 @@ US.Squadrons.USVAW117 = SQUADRON:New("OVERLORD1",4,"Wallbangers") -- E2D
 US.Squadrons.USVAW117:AddMissionCapability({AUFTRAG.Type.ORBIT,AUFTRAG.Type.AWACS},100)
 US.Squadrons.USVAW117:SetFuelLowRefuel(0.2)
 US.Squadrons.USVAW117:SetFuelLowRefuel(true)
-US.Squadrons.USWAV117:SetTakeoffAir()
+US.Squadrons.USVAW117:SetTakeoffAir()
 US.Squadrons.USVAW117:SetTurnoverTime(30,60) -- 30 minutes turn around time after landing to be able to be combat ready again, 60 minutes to repair 1LP
 
 US.Squadrons.USVFA14 = SQUADRON:New("TopHatters",6,"Tophatters") -- F14A135GR

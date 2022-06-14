@@ -37,15 +37,27 @@ function hevent:New(_markers,_lqm,_death,_tankertime,_tankercooldown)
 end
 
 --- sends a message out but does a check to see if we have a valid group or not if group is nil then we send to all
-function hevent:msg(_msg,_group,_duration,_infotype,_clear)
+function hevent:msg(_msg,_group,_col,_duration,_infotype,_clear)
   _infotype = _infotype or nil
   _clear = _clear or false
+  _col = _col or false
   if _group == nil then
-    MESSAGE:New(_msg,_duration,_infotype,_clear):ToAll()
-    self:E({_msg,_duration,_group})
+    if _col == nil then
+      MESSAGE:New(_msg,_duration,_infotype,_clear):ToAll()
+      self:E({_msg,_duration,_group})
+      return
+    end
+    if _col == 1 then
+      MESSAGE:New(_msg,_duration,_infotype,_clear):ToRed()
+      return
+    elseif _col == 2 then
+      MESSAGE:New(_msg,_duration,_infotype,_clear):ToBlue()
+      return
+    end
   else
     MESSAGE:New(_msg,_duration,_infotype,_clear):ToGroup(_group)
     self:E({_msg,_duration,_group})
+    return
   end
 end
 
@@ -268,18 +280,18 @@ function hevent:MountTroops(_text,_text2,_group,_col)
     local str = UTILS.Split(keyprhase,"=")
     local key=str[1]
     local val=str[2]
-    if key:lower() == "inf" or key:lower() == "i" or key:lower() == "troops" or key:lower() == "infantry" then
+    if key:lower() == "inf" or key:lower() == "i" or key:lower() == "troop" or key:lower() == "troops" or key:lower() == "infantry" then
       _infgroup = GROUP:FindByName(val)
       if _infgroup == nil then
-        self:msg(text.format("Unable to find infantry group %s so can not mount",val),_group,30)
+        self:msg(string.format("Unable to find infantry group %s so can not mount",val),_group,30)
         return
       end
       if _infgroup:HasAttribute("Infantry") ~= true then
-        self:msg(text.format("group %s was is not an infantry group.",val),_group,30)
+        self:msg(string.format("group %s was is not an infantry group.",val),_group,30)
         return
       end 
       if _infgroup:GetCoalition() ~= _col then
-        self:msg(text.format("group %s was is not part of your coalition.",val),_group,30)
+        self:msg(string.format("group %s was is not part of your coalition.",val),_group,30)
         return
       end
       _infgroupname = val
@@ -288,15 +300,15 @@ function hevent:MountTroops(_text,_text2,_group,_col)
     if key:lower() == "apc" or key:lower() == "apc" or key:lower() == "heli" or key:lower() == "helicopter" or key:lower() == "truck" or key:lower() == "transport" then
       _transportgroup = GROUP:FindByName(val)
       if _transportgroup == nil then
-        self:msg(text.format("Unable to find transport group %s so can not mount",val),_group,30)
+        self:msg(string.format("Unable to find transport group %s so can not mount",val),_group,30)
         return
       end
       if _transportgroup:GetCoalition() ~= _col then
-        self:msg(text.format("group %s is not part of your coalition",val),_group,30)
+        self:msg(string.format("group %s is not part of your coalition",val),_group,30)
         return
       end
-      if _transportgroup:HasAttribute("Infantry carriers") ~= true or _transportgroup:HasAttirbute("Transport helicopters") ~= true  or _transportgroup:hasAttribute("Truck") ~= true then
-        self:msg(text.format("group %s is reporting that it is not a Infantry Carrier, Truck or Transport Helicopter",val),_group,30)
+      if _transportgroup:HasAttribute("Infantry carriers") ~= true or _transportgroup:HasAttribute("Transport helicopters") ~= true  or _transportgroup:HasAttribute("Truck") ~= true then
+        self:msg(string.format("group %s is reporting that it is not a Infantry Carrier, Truck or Transport Helicopter",val),_group,30)
         return
       end
       _transportcapacity = _transportgroup:GetTroopCapacity()
@@ -322,7 +334,7 @@ function hevent:DisMountTroops(_text,_text2,_group,_col,_coord)
     if key:lower() == "transport" or key:lower() == "apc" or key:lower() == "heli" or key:lower() == "truck" or key:lower()=="from" or key:lower()=="helicopter" then
       _transportgroup = GROUP:FindByName(val)
       if _transportgroup == nil then
-        self:msg(text.format("Unable to find transport group %s so can not dismount",val),_group,30)
+        self:msg(string.format("Unable to find transport group %s so can not dismount",val),_group,30)
         return
       end
       if _transportgroup:GetCoalition() ~= _col then
@@ -433,7 +445,7 @@ function hevent:warehousetransfer(_text,_text2,_playername,_group,_col)
         _unittype = WAREHOUSE.Attribute.GROUND_TANK
       elseif val:lower() == "apc" or val:lower() == "ifv" then 
         _unittype = WAREHOUSE.Attribute.GROUND_APC
-      elseif val:lower() == "infantry" or val:lower() == "troops" then
+      elseif val:lower() == "infantry" or val:lower() == "troops" or val:lower() == "troop" or val:lower() == "inf"then
         _unittype = WAREHOUSE.Attribute.GROUND_INFANTRY
       elseif val:lower() == "aaa" then
         _unittype = WAREHOUSE.Attribute.GROUND_AAA

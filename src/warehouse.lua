@@ -252,9 +252,9 @@ function WAREHOUSEHANDLER(_group,_warehouse,_unittype,_specifictype,_amount,_req
     rlog({"WAREHOUSEHANDLER:",_group,_warehouse,_unittype,_specifictype,_amount,_requesttype,_towarehouse,_col})
     local checker = RGUTILS.groupchecker()
     if _specifictype ~= nil then
-        local _exists = GROUP:FindByName(_unittype)
+        local _exists = GROUP:FindByName(_specifictype)
         if _exists == nil then
-            local _tmsg = string.format("Unable to Process request as unit type %s that was requested does not exist",_unittype)
+            local _tmsg = string.format("Unable to Process request as unit type %s that was requested does not exist",_specifictype)
             if _group == nil then
                 if _col == 1 then             
                     MessageToRed(_tmsg,30)
